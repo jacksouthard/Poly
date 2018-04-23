@@ -10,11 +10,8 @@ public class SegmentController : MonoBehaviour {
 
 	float collectTimer = 0.5f;
 
-	// Use this for initialization
 	void Start () {
 		transform.parent = GameObject.Find("SegmentsContainer").transform;
-		GetComponent<Rigidbody2D>().angularVelocity = Random.Range (-45f, 45f); 
-		GetComponent<Rigidbody2D>().velocity = new Vector2(Random.Range (-0.5f, 0.5f), Random.Range (-0.5f, 0.5f));
 	}
 
 	public void StartTracking (Transform other, bool _fake)

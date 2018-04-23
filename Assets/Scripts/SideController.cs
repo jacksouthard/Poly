@@ -2,15 +2,20 @@
 using System.Collections;
 
 public class SideController : MonoBehaviour {
+	PolyController pc;
+
+	void Start () {
+		pc = GetComponentInParent<PolyController> ();
+	}
 
 	void OnCollisionEnter2D (Collision2D coll)
 	{
-		if (coll.gameObject.tag == "Attachable") {
-			transform.parent.parent.gameObject.GetComponent<PolyController>().OnPartHitSide (coll.gameObject, gameObject);
+		if (coll.gameObject.tag == "Attachable" && transform.childCount == 0) {
+			PartController partController = coll.gameObject.GetComponent<PartController> ();
+			if (!partController.collected) {
+				partController.AttachQued ();
+				pc.AttachPartRequest (coll.gameObject, gameObject);
+			}
 		}
-	}
-
-	public bool HasPartAttached () {
-		return ( transform.childCount > 0 );
 	}
 }

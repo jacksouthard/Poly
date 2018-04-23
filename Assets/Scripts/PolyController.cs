@@ -2,20 +2,6 @@
 using System.Collections;
 using UnityEngine.Networking;
 
-public struct Side
-{
-	public NetworkInstanceId partNetId;
-	public bool hasPartAttached;
-
-	// Pass in 0 to indicate no part attached
-	public Side(NetworkInstanceId partNetId ) {
-		this.partNetId = partNetId;
-		this.hasPartAttached = (partNetId != NetworkInstanceId.Invalid);
-		// TODO: Add health, etc.
-	}
-
-};
-
 public class PolyController : NetworkBehaviour {
 
 	private float sidesCountMin = 2.0f;
@@ -91,23 +77,19 @@ public class PolyController : NetworkBehaviour {
 		UpdateRendering();
 	}
 		
-	// SideList network syncing
-	public class SideList : SyncListStruct<Side> {}
-	SideList sideList = new SideList();
-			
-	public override void OnStartClient () {
-		sideList.Callback = OnSideListChange;
-	}
-		
 	// GENERAL ---------------------------------------------------------------------------------------
 
-	void Start() {
+	void Awake () {
 		SetupRendering();
+	}
+
+	void Start() {
 		if (isLocalPlayer) {
 			CmdChangeSidesCount (2.2f);
 			CmdChangePlayerNumber (Random.Range (0, 4));
 		} else {
 			SetSidesCount (sidesCount);
+			ExpressPartData (partData);
 		}
 	}
 
@@ -126,22 +108,6 @@ public class PolyController : NetworkBehaviour {
 			}
 			if (Input.GetKey("-")) {
 				CmdChangeSidesCount(sidesCount - sidesCountIncrement);
-			}
-
-			if (Input.GetKey("0")) {
-				CmdChangePlayerNumber(0);
-			}
-			if (Input.GetKey("1")) {
-				CmdChangePlayerNumber(1);
-			}
-			if (Input.GetKey("2")) {
-				CmdChangePlayerNumber(2);
-			}
-			if (Input.GetKey("3")) {
-				CmdChangePlayerNumber(3);
-			}
-			if (Input.GetKey("4")) {
-				CmdChangePlayerNumber(4);
 			}
 		}
 	}
@@ -221,10 +187,6 @@ public class PolyController : NetworkBehaviour {
 		sidesGOArray = new GameObject[sidesCountMax];
 
 		for (var i = 0; i < sidesCountMax; i++) {
-
-			// setup sync list
-			sideList.Add( new Side( NetworkInstanceId.Invalid) );
-
 			// Create game object
 			var newSide = Instantiate(sidePrefab, Vector3.zero, Quaternion.identity) as GameObject;
 			newSide.transform.parent = sidesContainer.transform;
@@ -349,8 +311,10 @@ public class PolyController : NetworkBehaviour {
 				sideGO.transform.localRotation = Quaternion.Euler (0, 0, angle-90);
 			} else {
 //				// make inactive, but first check if it has an attached part
-				if (isLocalPlayer && !sideList[i].hasPartAttached ) {
-					CmdDetachPartOnSide(i);
+				if (isLocalPlayer && sideGO.transform.childCount > 0) {
+					print ("Detaching part:" + i);
+					CmdDetachPart (i);
+					ExpressPartData (partData);
 				}
 				sideGO.SetActive(false);
 			}
@@ -413,13 +377,14 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	public void CmdSegmentStartDestory (GameObject segment) {
 		Destroy (segment);
-		GameObject.Find ("SegmentsManager").GetComponent<SegmentsManager> ().SegmentDestoryed ();
+		SegmentsManager.instance.SegmentDestoryed ();
 		Collect(0.2f);
 	}
 
 	void Collect (float sidesIncrement) {
 		CmdChangeSidesCount (sidesCount + sidesIncrement);
 	}
+
 
 	// HELPERS ------------------------------------------------------
 
@@ -443,65 +408,82 @@ public class PolyController : NetworkBehaviour {
 
 	// PARTS ------------------------------------------------------------------------------------------
 
-	// First, on server, a part hits a side...
+	[SyncVar(hook="ExpressPartData")]
+	string partData = "------------------------"; // each set of 00's represents the part data of one side
 
-	public void OnPartHitSide (GameObject part, GameObject side)
-	{
-		if (isServer) {
-			// if part is not attached AND side doesn't have part attached, attach part to side
-			int sideIndex = int.Parse(side.name);
-			if (!part.GetComponent<PartController>().isAttached() && !sideList[sideIndex].hasPartAttached ) {
-				NetworkInstanceId netId = part.GetComponent<NetworkIdentity>().netId;
-//				print("Call CmdAttachPartToSide(" + netId + ", "+sideIndex+")");
-				AttachPartToSide(netId, sideIndex);
+	public void AttachPartRequest (GameObject part, GameObject side) {
+		if (isLocalPlayer) {
+			CmdPartStartDestroy (part, side);
+		}
+	}
+
+	[Command]
+	void CmdPartStartDestroy (GameObject part, GameObject side) {
+		Destroy (part);
+		PartsManager.instance.PartDestoryed ();
+		AlterPartInData (part.GetComponent<PartController> ().id, GetSideIndexFromGO (side));
+	}
+
+	[Command]
+	void CmdDetachPart (int sideIndex) {
+		AlterPartInData (-1, sideIndex); // -1 is code for --
+	}
+
+	int GetSideIndexFromGO (GameObject GO) {
+		for (int i = 0; i < sidesGOArray.Length; i++) {
+			if (sidesGOArray [i] == GO) {
+				return i;
 			}
 		}
+		print ("No valid side found");
+		return 0;
 	}
 
-	// Second, the server updates the sideList for that item...
+	void AlterPartInData (int partID, int sideIndex) {
+		string IDString = "";
 
-	void AttachPartToSide(NetworkInstanceId netId, int sideIndex) {
-		sideList[sideIndex] = new Side( netId );
-		sideList.Dirty(sideIndex); // needed to make change propagate to clients
-		// TODO: Also need to call the OnPartIDChanged for server change?
-		RenderPartChangeOnSide(sideIndex);
-	}
-		
-	// Third, on the clients, the change of sideList is detected...
-
-	private void OnSideListChange(SideList.Operation op, int sideIndex)
-	{
-//		Debug.Log("OnSideListChange[" + sideIndex + "] " + op + " hasPart = " + sideList[sideIndex].hasPartAttached + " netId = " + sideList[sideIndex].partNetId);
-		if (op == SideList.Operation.OP_DIRTY) {
-			RenderPartChangeOnSide(sideIndex);
+		if (partID != -1) { // -1 code for replace with -- (no part)
+			if (partID < 10) {
+				IDString = "0" + partID.ToString ();
+			} else {
+				IDString = partID.ToString ();
+			}
+		} else {
+			IDString = "--";
 		}
+//		string newData = partData.Remove (sideIndex, 2).Insert(sideIndex, IDString);
+		int partSetIndex = sideIndex * 2;
+		string before = partData.Substring(0, partSetIndex);
+		string after = partData.Substring (partSetIndex + 2);
+		string newData = before + IDString + after;
+//		print ("Side: " + partSetIndex + " New Data: " + before + " | " + IDString + " | " + after);
+		partData = newData;
+		print (partData);
 	}
 
-	// And the visual change is rendered...
-
-	void RenderPartChangeOnSide(int sideIndex) {
-		// TODO: add check about attached or not
-		NetworkInstanceId netId = sideList[sideIndex].partNetId;
-
-		GameObject part = NetworkServer.FindLocalObject( netId );
-		GameObject side = sidesGOArray[sideIndex];
-		print("RenderPartChangeOnSide(" + sideIndex + "); partID = " + netId + " go = " + part);
-		part.GetComponent<PartController>().Attach(side);
-	}
-
-
-
-//	[ClientRpc]
-//	void RpcAttachPart (GameObject part, GameObject side)
-//	{
-//		print("debug:" + part + side);
-//		part.GetComponent<PartController>().Attach(side);
-//	}
-
-	// runs on server
-	[Command]
-	void CmdDetachPartOnSide(int sideIndex) {
-		sideList[sideIndex] = new Side(NetworkInstanceId.Invalid);
-//		part.GetComponent<PartController>().Detach();
+	void ExpressPartData (string newPartData) {
+		int[] sidePartIDs = new int[sidesCountMax];
+		for (int i = 0; i < sidePartIDs.Length; i++) {
+			string strPartID = newPartData.Substring (i * 2, 2);
+			if (strPartID == "--") {
+				sidePartIDs [i] = -1; // code for no part
+			} else {
+				sidePartIDs [i] = int.Parse (strPartID);
+			}
+		}
+		print ("Expressing: " + newPartData);
+		for (int i = 0; i < sidesGOArray.Length; i++) {
+			if (sidePartIDs [i] != -1) {
+				// spawnpart on empty side
+				PartData data = PartsManager.instance.GetDataWithID (sidePartIDs [i]);
+				GameObject newPart = Instantiate (data.prefab, sidesGOArray [i].transform);
+				newPart.transform.localPosition = Vector3.zero;
+				newPart.transform.localRotation = Quaternion.identity; 
+			} else {
+				if (sidesGOArray [i].transform.childCount > 0) {
+					Destroy (sidesGOArray [i].transform.GetChild (0).gameObject);
+				}
+			}
+		}
 	}
 }
