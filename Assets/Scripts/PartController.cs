@@ -35,6 +35,7 @@ public class PartController : NetworkBehaviour {
 	void UpdateData (int newID) {
 		PartData newData = PartsManager.instance.GetDataWithID (newID);
 		GetComponent<SpriteRenderer> ().sprite = newData.sprite; 
+		inited = true;
 	}
 		
 //	void OnCollisionEnter2D (Collision2D coll) {

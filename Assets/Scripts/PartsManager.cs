@@ -6,10 +6,14 @@ public class PartsManager : NetworkBehaviour {
 	public static PartsManager instance;
 
 	public PartData[] partsData;
-
 	public GameObject partPrefab;
-	public float spawnRadius;
 
+	[Header("Detaching")]
+	public float initialDetachDistance;
+	public float detachForce;
+
+	[Header("Spawning")]
+	public float spawnRadius;
 	private float spawnTimer;
 	private float spawnInterval = 1f;
 	private int partCount = 0;
@@ -47,6 +51,15 @@ public class PartsManager : NetworkBehaviour {
 		}
 	}
 
+	public void SpawnDetachedPart (int partID, Vector3 spawnPos, Quaternion spawnRot) {
+		GameObject part = Instantiate (partPrefab, spawnPos, spawnRot) as GameObject;
+		part.transform.position += part.transform.up * initialDetachDistance;
+		part.GetComponent<Rigidbody2D> ().AddRelativeForce (Vector2.up * detachForce);
+		part.GetComponent<PartController> ().Init(partID);
+
+		NetworkServer.Spawn (part);
+	}
+
 	public void PartDestoryed ()
 	{
 		partCount--;
@@ -60,6 +73,16 @@ public class PartsManager : NetworkBehaviour {
 		}
 		print ("No part data found with ID: " + id);
 		return partsData[0];
+	}
+
+	public int GetIDFromName (string name) {
+		foreach (var part in partsData) {
+			if (part.prefab.name == name) {
+				return part.partID;
+			}
+		}
+		print ("No part found with name: " + name);
+		return 0;
 	}
 }
 

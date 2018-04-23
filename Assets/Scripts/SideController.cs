@@ -13,6 +13,7 @@ public class SideController : MonoBehaviour {
 		if (coll.gameObject.tag == "Attachable" && transform.childCount == 0) {
 			PartController partController = coll.gameObject.GetComponent<PartController> ();
 			if (!partController.collected) {
+//				print ("Queing part:" + partController.id);
 				partController.AttachQued ();
 				pc.AttachPartRequest (coll.gameObject, gameObject);
 			}

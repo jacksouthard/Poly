@@ -6,7 +6,7 @@ public class PolyController : NetworkBehaviour {
 
 	private float sidesCountMin = 2.0f;
 	private int sidesCountMax = 12;
-	private float sidesCountIncrement = 0.05f;
+	private float sidesCountIncrement = 0.5f;
 	private float[] angles;
 	private float radius;
 
@@ -103,10 +103,10 @@ public class PolyController : NetworkBehaviour {
 			Move ();
 			Rotate ();
 
-			if (Input.GetKey("=")) {
+			if (Input.GetKeyDown("=")) {
 				CmdChangeSidesCount(sidesCount + sidesCountIncrement);
 			}
-			if (Input.GetKey("-")) {
+			if (Input.GetKeyDown("-")) {
 				CmdChangeSidesCount(sidesCount - sidesCountIncrement);
 			}
 		}
@@ -312,13 +312,22 @@ public class PolyController : NetworkBehaviour {
 			} else {
 //				// make inactive, but first check if it has an attached part
 				if (isLocalPlayer && sideGO.transform.childCount > 0) {
-					print ("Detaching part:" + i);
+					// spawn detached part
+					int detachedID = PartsManager.instance.GetIDFromName(sideGO.transform.GetChild(0).name);
+					CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+
+					// destory part on poly
 					CmdDetachPart (i);
 					ExpressPartData (partData);
 				}
 				sideGO.SetActive(false);
 			}
 		}
+	}
+
+	[Command]
+	void CmdRelaySpawnDetatchedPart (int partID, Vector3 spawnPos, Quaternion spawnRot) {
+		PartsManager.instance.SpawnDetachedPart (partID, spawnPos, spawnRot);
 	}
 
 	// returns angles of all verticies like [0, 120, 240] for triangle
@@ -413,15 +422,16 @@ public class PolyController : NetworkBehaviour {
 
 	public void AttachPartRequest (GameObject part, GameObject side) {
 		if (isLocalPlayer) {
-			CmdPartStartDestroy (part, side);
+			CmdPartStartDestroy (part.GetComponent<NetworkIdentity>().netId, int.Parse(side.name));
 		}
 	}
 
 	[Command]
-	void CmdPartStartDestroy (GameObject part, GameObject side) {
+	void CmdPartStartDestroy (NetworkInstanceId partNetID, int sideIndex) {
+		GameObject part = NetworkServer.FindLocalObject (partNetID);
+		AlterPartInData (part.GetComponent<PartController> ().id, sideIndex);
 		Destroy (part);
 		PartsManager.instance.PartDestoryed ();
-		AlterPartInData (part.GetComponent<PartController> ().id, GetSideIndexFromGO (side));
 	}
 
 	[Command]
@@ -429,15 +439,15 @@ public class PolyController : NetworkBehaviour {
 		AlterPartInData (-1, sideIndex); // -1 is code for --
 	}
 
-	int GetSideIndexFromGO (GameObject GO) {
-		for (int i = 0; i < sidesGOArray.Length; i++) {
-			if (sidesGOArray [i] == GO) {
-				return i;
-			}
-		}
-		print ("No valid side found");
-		return 0;
-	}
+//	int GetSideIndexFromGO (GameObject GO) {
+//		for (int i = 0; i < sidesGOArray.Length; i++) {
+//			if (sidesGOArray [i] == GO) {
+//				return i;
+//			}
+//		}
+//		print ("No valid side found");
+//		return 0;
+//	}
 
 	void AlterPartInData (int partID, int sideIndex) {
 		string IDString = "";
@@ -458,7 +468,6 @@ public class PolyController : NetworkBehaviour {
 		string newData = before + IDString + after;
 //		print ("Side: " + partSetIndex + " New Data: " + before + " | " + IDString + " | " + after);
 		partData = newData;
-		print (partData);
 	}
 
 	void ExpressPartData (string newPartData) {
@@ -477,6 +486,7 @@ public class PolyController : NetworkBehaviour {
 				// spawnpart on empty side
 				PartData data = PartsManager.instance.GetDataWithID (sidePartIDs [i]);
 				GameObject newPart = Instantiate (data.prefab, sidesGOArray [i].transform);
+				newPart.name = data.prefab.name;
 				newPart.transform.localPosition = Vector3.zero;
 				newPart.transform.localRotation = Quaternion.identity; 
 			} else {
