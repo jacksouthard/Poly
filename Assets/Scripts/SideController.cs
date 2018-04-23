@@ -10,12 +10,19 @@ public class SideController : MonoBehaviour {
 
 	void OnCollisionEnter2D (Collision2D coll)
 	{
-		if (coll.gameObject.tag == "Attachable" && transform.childCount == 0) {
-			PartController partController = coll.gameObject.GetComponent<PartController> ();
-			if (!partController.collected) {
-//				print ("Queing part:" + partController.id);
-				partController.AttachQued ();
-				pc.AttachPartRequest (coll.gameObject, gameObject);
+		if (pc.isLocalPlayer) {
+			print ("Side Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
+			if (coll.gameObject.tag == "Attachable" && transform.childCount == 0) {
+				PartController partController = coll.gameObject.GetComponent<PartController> ();
+				if (!partController.collected) {
+					partController.AttachQued ();
+					pc.AttachPartRequest (coll.gameObject, gameObject);
+				}
+			} else {
+				Damaging possibleDamage = coll.collider.gameObject.GetComponentInParent<Damaging> ();
+				if (possibleDamage != null) {
+					pc.TakeDamage (possibleDamage.damage);
+				}
 			}
 		}
 	}

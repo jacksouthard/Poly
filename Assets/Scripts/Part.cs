@@ -13,20 +13,28 @@ public class Part : MonoBehaviour {
 		health = maxHealth;
 		if (GetComponentInParent<PolyController> ().isLocalPlayer) {
 			master = true;
+//			Rigidbody2D rb = gameObject.AddComponent<Rigidbody2D> ();
+//			rb.isKinematic = true;
 		}
 	}
 
 	void OnCollisionEnter2D (Collision2D coll) {
-		Damaging damaging = coll.gameObject.GetComponentInParent<Damaging> ();
-		if (damaging != null) {
-			TakeDamage (damaging.damage);
+		if (master) {
+			print ("Part Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
+			Damaging damaging = coll.collider.gameObject.GetComponentInParent<Damaging> ();
+			if (damaging != null) {
+				TakeDamage (damaging.damage);
+			}
 		}
 	}
 
 	void TakeDamage (float damage) {
-		health -= damage;
-		if (health <= 0f) {
-			print ("Part Destoryed: " + gameObject);
+		if (master) {
+			health -= damage;
+			if (health <= 0f) {
+//			print ("Part Destoryed: " + gameObject);
+				GetComponentInParent<PolyController> ().DestroyPartRequest (transform.parent.gameObject);
+			}
 		}
 	}
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.Networking;
 
 public class PolyController : NetworkBehaviour {
-
+	private float damageToSidesRatio = 0.01f;
 	private float sidesCountMin = 2.0f;
 	private int sidesCountMax = 12;
 	private float sidesCountIncrement = 0.5f;
@@ -47,6 +47,10 @@ public class PolyController : NetworkBehaviour {
 	void CmdChangeSidesCount (float newValue) {
 		sidesCount = newValue;
 	}
+
+	public void TakeDamage (float damage) {
+		CmdChangeSidesCount (sidesCount - (damage * damageToSidesRatio));
+ 	}
 
 	void SetSidesCount (float newValue)
 	{
@@ -325,7 +329,7 @@ public class PolyController : NetworkBehaviour {
 							CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
 
 							// destory part on poly
-							CmdDetachPart (i);
+							CmdDestroyPart (i);
 							ExpressPartData (partData);
 						}
 					}
@@ -431,9 +435,7 @@ public class PolyController : NetworkBehaviour {
 	string partData = "------------------------"; // each set of 00's represents the part data of one side
 
 	public void AttachPartRequest (GameObject part, GameObject side) {
-		if (isLocalPlayer) {
-			CmdPartStartDestroy (part.GetComponent<NetworkIdentity>().netId, int.Parse(side.name));
-		}
+		CmdPartStartDestroy (part.GetComponent<NetworkIdentity>().netId, int.Parse(side.name));
 	}
 
 	[Command]
@@ -445,8 +447,14 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	[Command]
-	void CmdDetachPart (int sideIndex) {
+	void CmdDestroyPart (int sideIndex) {
 		AlterPartInData (-1, sideIndex); // -1 is code for --
+	}
+
+	public void DestroyPartRequest (GameObject side) {
+		if (isLocalPlayer) {
+			CmdDestroyPart (int.Parse (side.name));
+		}
 	}
 
 //	int GetSideIndexFromGO (GameObject GO) {
