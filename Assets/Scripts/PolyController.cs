@@ -110,6 +110,10 @@ public class PolyController : NetworkBehaviour {
 				CmdChangeSidesCount(sidesCount - sidesCountIncrement);
 			}
 		}
+
+		if (Input.GetKeyDown (KeyCode.G)) {
+			print (partData);
+		}
 	}
 
 	void CameraSetup () {			
@@ -310,17 +314,23 @@ public class PolyController : NetworkBehaviour {
 				sideGO.transform.localPosition = new Vector3 (x, y, 0);
 				sideGO.transform.localRotation = Quaternion.Euler (0, 0, angle-90);
 			} else {
+				if (sideGO.activeInHierarchy) {
 //				// make inactive, but first check if it has an attached part
-				if (isLocalPlayer && sideGO.transform.childCount > 0) {
-					// spawn detached part
-					int detachedID = PartsManager.instance.GetIDFromName(sideGO.transform.GetChild(0).name);
-					CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+					if (isLocalPlayer && sideGO.transform.childCount > 0) {
+						// if part is not already detaching
+						if (!sideGO.GetComponentInChildren<Part> ().detaching) {
+							// spawn detached part
+							sideGO.GetComponentInChildren<Part> ().detaching = true;
+							int detachedID = PartsManager.instance.GetIDFromName (sideGO.transform.GetChild (0).name);
+							CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
 
-					// destory part on poly
-					CmdDetachPart (i);
-					ExpressPartData (partData);
+							// destory part on poly
+							CmdDetachPart (i);
+							ExpressPartData (partData);
+						}
+					}
+					sideGO.SetActive (false);
 				}
-				sideGO.SetActive(false);
 			}
 		}
 	}

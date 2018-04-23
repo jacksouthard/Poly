@@ -10,6 +10,7 @@ GameObject:
   - component: {fileID: 439718}
   - component: {fileID: 21284258}
   - component: {fileID: 6020106}
+  - component: {fileID: 114142608781801866}
   m_Layer: 9
   m_Name: PartEngine
   m_TagString: Attachable
@@ -117,3 +118,16 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 170578}
   m_IsPrefabParent: 1
+--- !u!114 &114142608781801866
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 170578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f108afa712d044beba97433d4d911e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  master: 0
+  maxHealth: 100
