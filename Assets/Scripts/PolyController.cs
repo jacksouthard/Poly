@@ -3,7 +3,10 @@ using System.Collections;
 using UnityEngine.Networking;
 
 public class PolyController : NetworkBehaviour {
+	public bool alive = true; // only matters locally
+
 	private float damageToSidesRatio = 0.01f;
+	private float startingSides = 2.2f;
 	private float sidesCountMin = 2f;
 	private int sidesCountMax = 12;
 	private float sidesCountIncrement = 0.5f;
@@ -45,7 +48,13 @@ public class PolyController : NetworkBehaviour {
 
 	[Command]
 	void CmdChangeSidesCount (float newValue) {
-		sidesCount = newValue;
+		if (newValue < sidesCountMin) {
+			CmdPlayerDie ();
+			return;
+		}
+
+		// if poly isnt dying...
+		sidesCount = Mathf.Clamp (newValue, sidesCountMin, sidesCountMax);
 	}
 
 	public void TakeDamage (float damage) {
@@ -54,11 +63,10 @@ public class PolyController : NetworkBehaviour {
 
 	void SetSidesCount (float newValue)
 	{
-//		print ("Sides count set at " + newValue);
-		if (newValue < sidesCountMin) {
-			print ("Die");
+		if (newValue < sidesCountMin) { // for case where sides == 0 on start
+			newValue = sidesCountMin;
 		}
-		sidesCount = Mathf.Clamp (newValue, sidesCountMin, sidesCountMax);
+		sidesCount = newValue;
 
 		UpdateRendering();
 		gameObject.GetComponent<CircleCollider2D>().radius = radius + 0.75f;
@@ -73,6 +81,47 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	void CmdChangePlayerNumber(int newValue) {
 		SetPlayerNumber(newValue);
+	}
+
+	[Command]
+	void CmdPlayerDie () {
+		partData = "------------------------";
+		RpcPlayerDie ();
+	}
+
+	[ClientRpc]
+	void RpcPlayerDie () {
+		alive = false;
+
+		// disable visuals
+		GetComponent<MeshRenderer> ().enabled = false;
+		foreach (var spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
+			spriteRenderer.enabled = false;
+		}
+	}
+
+	[Command]
+	void CmdResetPlayer () {
+		CmdChangeSidesCount(startingSides);
+		RpcResetPlayer ();
+	}
+
+	[ClientRpc]
+	void RpcResetPlayer () {
+		// local player (sometimes client) has authority over its own movement
+		if (isLocalPlayer) {
+			transform.position = Vector3.zero;
+			GetComponent<Rigidbody2D> ().velocity = Vector2.zero;
+			GetComponent<Rigidbody2D> ().angularVelocity = 0f;
+		}
+			
+		alive = true;
+
+		// renable visuals
+		GetComponent<MeshRenderer> ().enabled = true;
+		foreach (var spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
+			spriteRenderer.enabled = true;
+		}
 	}
 
 	// recieves server synced value and updates object locally
@@ -92,7 +141,7 @@ public class PolyController : NetworkBehaviour {
 
 	void Start() {
 		if (isLocalPlayer) {
-			CmdChangeSidesCount (2.2f);
+			CmdChangeSidesCount (startingSides);
 			CmdChangePlayerNumber (Random.Range (0, 4));
 		} else {
 			SetSidesCount (sidesCount);
@@ -106,7 +155,7 @@ public class PolyController : NetworkBehaviour {
 	
 	void Update ()
 	{
-		if (isLocalPlayer) {
+		if (isLocalPlayer && alive) {
 			Move ();
 			Rotate ();
 
@@ -120,6 +169,11 @@ public class PolyController : NetworkBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.G)) {
 			print (partData);
+		}
+
+		if (!alive && isLocalPlayer && Input.GetKeyDown (KeyCode.R)) {
+			// respawn if dead
+			CmdResetPlayer();
 		}
 	}
 
