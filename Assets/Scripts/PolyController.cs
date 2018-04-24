@@ -219,6 +219,11 @@ public class PolyController : NetworkBehaviour {
 		foreach (var spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
 			spriteRenderer.enabled = false;
 		}
+
+		// disable colliders
+		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
+			collider.enabled = false;
+		}
 	}
 
 	[Command]
@@ -242,6 +247,11 @@ public class PolyController : NetworkBehaviour {
 		GetComponent<MeshRenderer> ().enabled = true;
 		foreach (var spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
 			spriteRenderer.enabled = true;
+		}
+
+		// renable colliders
+		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
+			collider.enabled = true;
 		}
 	}
 

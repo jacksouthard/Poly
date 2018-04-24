@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ProjectilePart : Part {
-	bool shouldFire = true;
+	bool shouldFire = false;
 
 	public int projectileIndex;
 	public float spawnDistance;
@@ -41,7 +41,7 @@ public class ProjectilePart : Part {
 	void OnTriggerExit2D (Collider2D coll) {
 		if (master && coll.GetComponentInParent<PolyController> () != null) {
 			// poly leave fire zone
-//			shouldFire = false;
+			shouldFire = false;
 		}
 	}
 }
