@@ -14,6 +14,7 @@ public class PolyController : NetworkBehaviour {
 	float speed = 10f;
 	float maxVelocity = 2f;
 	float rotationSpeed = 5f;
+	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
 
 	// sides
 	float damageToSidesRatio = 0.01f;
@@ -178,11 +179,11 @@ public class PolyController : NetworkBehaviour {
 
 		// add force to poly
 		if (moveOffset != Vector2.zero) {
-			rb.AddForce (moveOffset * speed);
+			rb.AddForce (moveOffset * speed * speedBoost);
 		}
 
 		// limit velocity
-		rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxVelocity);
+		rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxVelocity * speedBoost);
 	}
 
 	void Rotate ()
@@ -253,6 +254,8 @@ public class PolyController : NetworkBehaviour {
 		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
 			collider.enabled = true;
 		}
+
+		speedBoost = 1f;
 	}
 
 	// DETECTION ----------------------------------------------------------------------------------------
@@ -344,7 +347,7 @@ public class PolyController : NetworkBehaviour {
 				sidePartIDs [i] = int.Parse (strPartID);
 			}
 		}
-		print ("Expressing: " + newPartData);
+//		print ("Expressing: " + newPartData);
 		for (int i = 0; i < sidesGOArray.Length; i++) {
 			if (sidePartIDs [i] != -1) {
 				if (sidesGOArray [i].transform.childCount == 0) {
@@ -357,7 +360,12 @@ public class PolyController : NetworkBehaviour {
 				}
 			} else {
 				for (int c = 0; c < sidesGOArray[i].transform.childCount; c++) {
-					Destroy (sidesGOArray [i].transform.GetChild (c).gameObject);
+					GameObject part = sidesGOArray [i].transform.GetChild (c).gameObject;
+					BoosterPart possibleBooster = part.GetComponent<BoosterPart> ();
+					if (possibleBooster != null) {
+						possibleBooster.Deactivate ();
+					}
+					Destroy (part);
 				}
 			}
 		}
