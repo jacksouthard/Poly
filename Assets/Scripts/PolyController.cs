@@ -505,12 +505,14 @@ public class PolyController : NetworkBehaviour {
 		print ("Expressing: " + newPartData);
 		for (int i = 0; i < sidesGOArray.Length; i++) {
 			if (sidePartIDs [i] != -1) {
-				// spawnpart on empty side
-				PartData data = PartsManager.instance.GetDataWithID (sidePartIDs [i]);
-				GameObject newPart = Instantiate (data.prefab, sidesGOArray [i].transform);
-				newPart.name = data.prefab.name;
-				newPart.transform.localPosition = Vector3.zero;
-				newPart.transform.localRotation = Quaternion.identity; 
+				if (sidesGOArray [i].transform.childCount == 0) {
+					// spawnpart on empty side
+					PartData data = PartsManager.instance.GetDataWithID (sidePartIDs [i]);
+					GameObject newPart = Instantiate (data.prefab, sidesGOArray [i].transform);
+					newPart.name = data.prefab.name;
+					newPart.transform.localPosition = Vector3.zero;
+					newPart.transform.localRotation = Quaternion.identity; 
+				}
 			} else {
 				for (int c = 0; c < sidesGOArray[i].transform.childCount; c++) {
 					Destroy (sidesGOArray [i].transform.GetChild (c).gameObject);
