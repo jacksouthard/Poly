@@ -11,7 +11,7 @@ public class SideController : MonoBehaviour {
 	void OnCollisionEnter2D (Collision2D coll)
 	{
 		if (pc.isLocalPlayer) {
-			print ("Side Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
+//			print ("Side Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
 			if (coll.gameObject.tag == "Attachable" && transform.childCount == 0) {
 				PartController partController = coll.gameObject.GetComponent<PartController> ();
 				if (!partController.collected) {
@@ -22,6 +22,21 @@ public class SideController : MonoBehaviour {
 				Damaging possibleDamage = coll.collider.gameObject.GetComponentInParent<Damaging> ();
 				if (possibleDamage != null) {
 					pc.TakeDamage (possibleDamage.damage);
+				}
+			}
+		}
+	}
+
+	void OnTriggerEnter2D (Collider2D coll) {
+		if (coll.tag == "Projectile") {
+			Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
+			if (!projectile.live) {
+				return; // projectile is either nonexistant or already has hit something
+			} else {
+				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
+				if (pc.isLocalPlayer) {
+					pc.TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage);
+					pc.RelayDestoryProjectile (projectile.gameObject);
 				}
 			}
 		}

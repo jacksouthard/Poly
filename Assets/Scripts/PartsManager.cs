@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 public class PartsManager : NetworkBehaviour {
 	public static PartsManager instance;
 
+	public GameObject[] projectiles;
 	public PartData[] partsData;
 	public GameObject partPrefab;
 
@@ -15,9 +16,9 @@ public class PartsManager : NetworkBehaviour {
 	[Header("Spawning")]
 	public float spawnRadius;
 	private float spawnTimer;
-	private float spawnInterval = 1f;
+	private float spawnInterval = 0.5f;
 	private int partCount = 0;
-	private int partCountMax = 5;
+	private int partCountMax = 10;
 
 	void Awake () {
 		instance = this;
@@ -58,6 +59,18 @@ public class PartsManager : NetworkBehaviour {
 		part.GetComponent<PartController> ().Init(partID);
 
 		NetworkServer.Spawn (part);
+	}
+
+	[Command]
+	public void CmdSpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+		GameObject prefab = projectiles [projectileIndex];
+		spawnPos += Vector3.forward * 1f; // shift back in layers
+		GameObject newProjectile = Instantiate (prefab, spawnPos, spawnRot);
+		Projectile projectileScript = newProjectile.GetComponent<Projectile> ();
+		newProjectile.GetComponent<Rigidbody2D> ().velocity = newProjectile.transform.up * projectileScript.speed;
+
+		NetworkServer.Spawn (newProjectile);
+		Destroy (newProjectile, projectileScript.lifeTime);
 	}
 
 	public void PartDestoryed ()

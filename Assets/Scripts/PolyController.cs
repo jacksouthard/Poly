@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 public class PolyController : NetworkBehaviour {
 	private float damageToSidesRatio = 0.01f;
-	private float sidesCountMin = 2.0f;
+	private float sidesCountMin = 2f;
 	private int sidesCountMax = 12;
 	private float sidesCountIncrement = 0.5f;
 	private float[] angles;
@@ -55,6 +55,9 @@ public class PolyController : NetworkBehaviour {
 	void SetSidesCount (float newValue)
 	{
 //		print ("Sides count set at " + newValue);
+		if (newValue < sidesCountMin) {
+			print ("Die");
+		}
 		sidesCount = Mathf.Clamp (newValue, sidesCountMin, sidesCountMax);
 
 		UpdateRendering();
@@ -330,7 +333,7 @@ public class PolyController : NetworkBehaviour {
 
 							// destory part on poly
 							CmdDestroyPart (i);
-							ExpressPartData (partData);
+							CmdRelayManualBackupExpressPartData ();
 						}
 					}
 					sideGO.SetActive (false);
@@ -441,14 +444,14 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	void CmdPartStartDestroy (NetworkInstanceId partNetID, int sideIndex) {
 		GameObject part = NetworkServer.FindLocalObject (partNetID);
-		AlterPartInData (part.GetComponent<PartController> ().id, sideIndex);
+		CmdAlterPartInData (part.GetComponent<PartController> ().id, sideIndex);
 		Destroy (part);
 		PartsManager.instance.PartDestoryed ();
 	}
 
 	[Command]
 	void CmdDestroyPart (int sideIndex) {
-		AlterPartInData (-1, sideIndex); // -1 is code for --
+		CmdAlterPartInData (-1, sideIndex); // -1 is code for --
 	}
 
 	public void DestroyPartRequest (GameObject side) {
@@ -467,7 +470,8 @@ public class PolyController : NetworkBehaviour {
 //		return 0;
 //	}
 
-	void AlterPartInData (int partID, int sideIndex) {
+	[Command]
+	void CmdAlterPartInData (int partID, int sideIndex) {
 		string IDString = "";
 
 		if (partID != -1) { // -1 code for replace with -- (no part)
@@ -484,7 +488,7 @@ public class PolyController : NetworkBehaviour {
 		string before = partData.Substring(0, partSetIndex);
 		string after = partData.Substring (partSetIndex + 2);
 		string newData = before + IDString + after;
-//		print ("Side: " + partSetIndex + " New Data: " + before + " | " + IDString + " | " + after);
+//		print ("O: " + partData + " N: " + newData);
 		partData = newData;
 	}
 
@@ -508,10 +512,42 @@ public class PolyController : NetworkBehaviour {
 				newPart.transform.localPosition = Vector3.zero;
 				newPart.transform.localRotation = Quaternion.identity; 
 			} else {
-				if (sidesGOArray [i].transform.childCount > 0) {
-					Destroy (sidesGOArray [i].transform.GetChild (0).gameObject);
+				for (int c = 0; c < sidesGOArray[i].transform.childCount; c++) {
+					Destroy (sidesGOArray [i].transform.GetChild (c).gameObject);
 				}
 			}
 		}
+	}
+
+	[Command]
+	void CmdRelayManualBackupExpressPartData () {
+		RpcManualBackupExpressPartData ();
+	}
+
+	[ClientRpc]
+	void RpcManualBackupExpressPartData () {
+		ExpressPartData (partData);
+	}
+
+	public void RelayDestoryProjectile (GameObject projectile) {
+		if (isLocalPlayer) {
+			CmdDestoryProjectile (projectile.GetComponent<NetworkIdentity> ().netId);
+		}
+	}
+
+	[Command]
+	void CmdDestoryProjectile (NetworkInstanceId netID) {
+		Destroy (NetworkServer.FindLocalObject (netID));
+	}
+
+	public void RelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+		if (isLocalPlayer) {
+			CmdRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+		}
+	}
+
+	[Command]
+	public void CmdRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+		PartsManager.instance.CmdSpawnProjectile (projectileIndex, spawnPos, spawnRot);
 	}
 }
