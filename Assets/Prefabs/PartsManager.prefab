@@ -68,7 +68,7 @@ MonoBehaviour:
   partPrefab: {fileID: 1838061224783800, guid: f31b43c106cc7407ab41d4a622b8065f, type: 2}
   initialDetachDistance: 0.5
   detachForce: 200
-  spawnRadius: 10
+  spawnRadius: 48
 --- !u!114 &114707156313804818
 MonoBehaviour:
   m_ObjectHideFlags: 1

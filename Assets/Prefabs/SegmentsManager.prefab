@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   segmentPrefab: {fileID: 150536, guid: 4a94416c7d22e45cfa6210dd76b19c61, type: 2}
-  spawnRadius: 10
+  spawnRadius: 48
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

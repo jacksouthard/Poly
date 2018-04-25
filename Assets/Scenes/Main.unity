@@ -467,6 +467,7 @@ MonoBehaviour:
   matchSize: 4
   isNetworkActive: 0
   matchMaker: {fileID: 0}
+  runAs: 0
 --- !u!1 &538002887
 GameObject:
   m_ObjectHideFlags: 0

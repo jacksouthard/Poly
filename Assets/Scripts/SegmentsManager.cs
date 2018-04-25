@@ -14,9 +14,9 @@ public class SegmentsManager : NetworkBehaviour {
 	float burstSpawnDst = 0.2f;
 
 	private float spawnTimer;
-	private float spawnInterval = 1f;
+	private float spawnInterval = 0.1f;
 	private int segmentCount = 0;
-	private int segmentCountMax = 10;
+	private int segmentCountMax = 200;
 
 	void Awake () {
 		instance = this;
@@ -48,8 +48,7 @@ public class SegmentsManager : NetworkBehaviour {
 		}
 	}
 
-	[Command]
-	public void CmdSpawnSegmentBurst (int count, Vector2 spawnPos, float spawnZ) {
+	public void SpawnSegmentBurst (int count, Vector2 spawnPos, float spawnZ) {
 		StartCoroutine(SpawnBurst (count, spawnPos, spawnZ));
 	}
 

@@ -18,7 +18,7 @@ public class PartsManager : NetworkBehaviour {
 	private float spawnTimer;
 	private float spawnInterval = 0.5f;
 	private int partCount = 0;
-	private int partCountMax = 10;
+	private int partCountMax = 30;
 
 	void Awake () {
 		instance = this;

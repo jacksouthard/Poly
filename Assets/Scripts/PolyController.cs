@@ -89,12 +89,22 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	void CmdChangeSidesCount (float newValue) {
 		if (newValue < sidesCountMin) {
-			CmdPlayerDie ();
+			partData = "------------------------";
+			if (!isClient) {
+				ExpressPartData (partData); // only needs to happen on server, not host
+			}
+
+			PlayerDie ();
+			RpcPlayerDie ();
 			return;
 		}
 
 		// if poly isnt dying...
 		sidesCount = Mathf.Clamp (newValue, sidesCountMin, sidesCountMax);
+
+		if (!isClient) {
+			UpdateRendering (); // for server and not host
+		}
 	}
 
 	public void TakeDamage (float damage, Transform side) {
@@ -108,7 +118,7 @@ public class PolyController : NetworkBehaviour {
 
 	[Command]
 	void CmdRelayBurstSpawn (int count, Vector2 spawnPos, float spawnZ) {
-		SegmentsManager.instance.CmdSpawnSegmentBurst(count, spawnPos, spawnZ);
+		SegmentsManager.instance.SpawnSegmentBurst(count, spawnPos, spawnZ);
 	}
 
 	void SetSidesCount (float newValue)
@@ -236,14 +246,12 @@ public class PolyController : NetworkBehaviour {
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
 
-	[Command]
-	void CmdPlayerDie () {
-		partData = "------------------------";
-		RpcPlayerDie ();
-	}
-
 	[ClientRpc]
 	void RpcPlayerDie () {
+		PlayerDie ();
+	}
+
+	void PlayerDie () {
 		alive = false;
 
 		// disable visuals
@@ -264,13 +272,20 @@ public class PolyController : NetworkBehaviour {
 
 	[Command]
 	void CmdResetPlayer () {
-		CmdChangeSidesCount(startingSides);
+		SetSidesCount (startingSides);
+
+		ResetPlayer ();
 		RpcResetPlayer ();
 	}
 
 	[ClientRpc]
 	void RpcResetPlayer () {
 		// local player (sometimes client) has authority over its own movement
+		ResetPlayer();
+
+	}
+
+	void ResetPlayer () {
 		if (isLocalPlayer) {
 			transform.position = Vector3.zero;
 			GetComponent<Rigidbody2D> ().velocity = Vector2.zero;
@@ -318,7 +333,11 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	void Collect (float sidesIncrement) {
-		CmdChangeSidesCount (sidesCount + sidesIncrement);
+		sidesCount += sidesIncrement;
+
+		if (!isClient) {
+			UpdateRendering (); // only has to happen on server
+		}
 	}
 
 	void StartCollectionCooldown () {
@@ -342,14 +361,14 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	void CmdPartStartDestroy (NetworkInstanceId partNetID, int sideIndex) {
 		GameObject part = NetworkServer.FindLocalObject (partNetID);
-		CmdAlterPartInData (part.GetComponent<PartController> ().id, sideIndex);
+		AlterPartInData (part.GetComponent<PartController> ().id, sideIndex);
 		Destroy (part);
 		PartsManager.instance.PartDestoryed ();
 	}
 
 	[Command]
 	void CmdDestroyPart (int sideIndex) {
-		CmdAlterPartInData (-1, sideIndex); // -1 is code for --
+		AlterPartInData (-1, sideIndex); // -1 is code for --
 	}
 
 	public void DestroyPartRequest (GameObject side) {
@@ -363,8 +382,7 @@ public class PolyController : NetworkBehaviour {
 		PartsManager.instance.SpawnDetachedPart (partID, spawnPos, spawnRot);
 	}
 
-	[Command]
-	void CmdAlterPartInData (int partID, int sideIndex) {
+	void AlterPartInData (int partID, int sideIndex) {
 		string IDString = "";
 
 		if (partID != -1) { // -1 code for replace with -- (no part)
@@ -376,13 +394,15 @@ public class PolyController : NetworkBehaviour {
 		} else {
 			IDString = "--";
 		}
-//		string newData = partData.Remove (sideIndex, 2).Insert(sideIndex, IDString);
 		int partSetIndex = sideIndex * 2;
 		string before = partData.Substring(0, partSetIndex);
 		string after = partData.Substring (partSetIndex + 2);
 		string newData = before + IDString + after;
-//		print ("O: " + partData + " N: " + newData);
 		partData = newData;
+
+		if (!isClient) {
+			ExpressPartData (partData); // not for host, only server
+		}
 	}
 
 	void ExpressPartData (string newPartData) {
