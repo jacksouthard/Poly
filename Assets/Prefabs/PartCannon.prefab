@@ -154,6 +154,6 @@ MonoBehaviour:
   master: 0
   detaching: 0
   maxHealth: 100
-  projectileIndex: 0
+  projectileIndex: 1
   spawnDistance: 0.7
-  fireRate: 1
+  fireRate: 2

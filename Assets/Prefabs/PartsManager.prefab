@@ -86,6 +86,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectiles:
   - {fileID: 1510908314926012, guid: 4907f52fba0ea4d9993d0fde0fb78888, type: 2}
+  - {fileID: 1918359643942334, guid: a6c02b22351ea45848249dca13c3f8a8, type: 2}
   partsData:
   - partID: 0
     sprite: {fileID: 21300000, guid: 13cacfe72be2e47bc93c29d184bb4d2d, type: 3}
