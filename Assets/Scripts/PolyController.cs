@@ -45,6 +45,9 @@ public class PolyController : NetworkBehaviour {
 		new Color(0.33f, 0.72f, 0.33f)
 	};
 
+	// UI
+	Animator deathAnimator;
+
 	// misc
 	public bool alive = true; // only matters locally
 	GameObject playerCamera;
@@ -59,6 +62,7 @@ public class PolyController : NetworkBehaviour {
 		// set up references
 		rb = GetComponent<Rigidbody2D>();
 		attractZone = GetComponent<CircleCollider2D> ();
+		deathAnimator = GameObject.Find ("Canvas").transform.Find ("GameOver").GetComponent<Animator> ();
 
 		if (isLocalPlayer) {
 			CmdChangeSidesCount (startingSides);
@@ -156,8 +160,9 @@ public class PolyController : NetworkBehaviour {
 			print (partData);
 		}
 
-		if (!alive && isLocalPlayer && Input.GetKeyDown (KeyCode.R)) {
+		if (!alive && isLocalPlayer && Input.anyKeyDown) {
 			// respawn if dead
+			deathAnimator.SetTrigger ("Exit");
 			CmdResetPlayer();
 		}
 	}
@@ -224,6 +229,10 @@ public class PolyController : NetworkBehaviour {
 		// disable colliders
 		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
 			collider.enabled = false;
+		}
+
+		if (isLocalPlayer) {
+			deathAnimator.SetTrigger ("Enter");
 		}
 	}
 
@@ -547,7 +556,7 @@ public class PolyController : NetworkBehaviour {
 				sideGO.transform.localRotation = Quaternion.Euler (0, 0, angle-90);
 			} else {
 				if (sideGO.activeInHierarchy) {
-					//				// make inactive, but first check if it has an attached part
+					// make inactive, but first check if it has an attached part
 					if (isLocalPlayer && sideGO.transform.childCount > 0) {
 						// if part is not already detaching
 						if (!sideGO.GetComponentInChildren<Part> ().detaching) {
