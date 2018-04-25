@@ -21,7 +21,7 @@ public class SideController : MonoBehaviour {
 			} else {
 				Damaging possibleDamage = coll.collider.gameObject.GetComponentInParent<Damaging> ();
 				if (possibleDamage != null) {
-					pc.TakeDamage (possibleDamage.damage);
+					pc.TakeDamage (possibleDamage.damage, transform);
 				}
 			}
 		}
@@ -35,7 +35,7 @@ public class SideController : MonoBehaviour {
 			} else {
 				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 				if (pc.isLocalPlayer) {
-					pc.TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage);
+					pc.TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage, transform);
 					pc.RelayDestoryProjectile (projectile.gameObject);
 				}
 			}

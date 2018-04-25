@@ -12,6 +12,7 @@ public class SegmentController : MonoBehaviour {
 
 	void Start () {
 		transform.parent = GameObject.Find("SegmentsContainer").transform;
+		transform.position = new Vector3 (transform.position.x, transform.position.y, 5f);
 	}
 
 	public void StartTracking (Transform other, bool _fake)

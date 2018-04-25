@@ -12,7 +12,6 @@ public class PolyController : NetworkBehaviour {
 
 	// movement
 	float speed = 10f;
-	float maxVelocity = 2f;
 	float rotationSpeed = 5f;
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
 
@@ -45,8 +44,13 @@ public class PolyController : NetworkBehaviour {
 		new Color(0.33f, 0.72f, 0.33f)
 	};
 
-	// UI
+	// ui
 	Animator deathAnimator;
+
+	// collection
+	float collectionCooldownAfterDamage = 2f;
+	float collectionCooldown;
+	bool hasCooldown = false;
 
 	// misc
 	public bool alive = true; // only matters locally
@@ -93,9 +97,19 @@ public class PolyController : NetworkBehaviour {
 		sidesCount = Mathf.Clamp (newValue, sidesCountMin, sidesCountMax);
 	}
 
-	public void TakeDamage (float damage) {
-		CmdChangeSidesCount (sidesCount - (damage * damageToSidesRatio));
+	public void TakeDamage (float damage, Transform side) {
+		float damageInSides = damage * damageToSidesRatio;
+		CmdChangeSidesCount (sidesCount - damageInSides);
+
+		StartCollectionCooldown ();
+		int segmentsCount = Mathf.FloorToInt(damageInSides / 0.2f / 2f); // the value of segments
+		CmdRelayBurstSpawn(segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
  	}
+
+	[Command]
+	void CmdRelayBurstSpawn (int count, Vector2 spawnPos, float spawnZ) {
+		SegmentsManager.instance.CmdSpawnSegmentBurst(count, spawnPos, spawnZ);
+	}
 
 	void SetSidesCount (float newValue)
 	{
@@ -153,6 +167,18 @@ public class PolyController : NetworkBehaviour {
 			}
 			if (Input.GetKeyDown("-")) {
 				CmdChangeSidesCount(sidesCount - sidesCountIncrement);
+			}
+
+			if (Input.GetKeyDown("0")) { // for testing damage bursts
+				TakeDamage(100f, sidesGOArray[0].transform);
+			}
+
+			// collection cooldown
+			if (hasCooldown) {
+				collectionCooldown -= Time.deltaTime;
+				if (collectionCooldown <= 0f) {
+					EndCollectionCooldown ();
+				}
 			}
 		}
 
@@ -249,6 +275,10 @@ public class PolyController : NetworkBehaviour {
 			transform.position = Vector3.zero;
 			GetComponent<Rigidbody2D> ().velocity = Vector2.zero;
 			GetComponent<Rigidbody2D> ().angularVelocity = 0f;
+
+			if (hasCooldown) {
+				EndCollectionCooldown ();
+			}
 		}
 
 		alive = true;
@@ -267,11 +297,11 @@ public class PolyController : NetworkBehaviour {
 		speedBoost = 1f;
 	}
 
-	// DETECTION ----------------------------------------------------------------------------------------
+	// SEGMENTS AND COLLECTION ----------------------------------------------------------------------------------------
 
 	// Handle a collectable segment entering collect zone around poly
 	void OnTriggerEnter2D (Collider2D other) {
-		if (other.CompareTag("Collectable")) {
+		if (other.CompareTag("Collectable") && !hasCooldown && isLocalPlayer) {
 			if (isLocalPlayer) {
 				other.gameObject.GetComponent<SegmentController> ().StartTracking (gameObject.transform, false);
 			} else {
@@ -289,6 +319,15 @@ public class PolyController : NetworkBehaviour {
 
 	void Collect (float sidesIncrement) {
 		CmdChangeSidesCount (sidesCount + sidesIncrement);
+	}
+
+	void StartCollectionCooldown () {
+		hasCooldown = true;
+		collectionCooldown = collectionCooldownAfterDamage;
+	}
+
+	void EndCollectionCooldown () {
+		hasCooldown = false;
 	}
 		
 	// PARTS --------------------------------------------------------------------------------------------------------------------------------
@@ -424,7 +463,7 @@ public class PolyController : NetworkBehaviour {
 		mr = gameObject.AddComponent (typeof(MeshRenderer)) as MeshRenderer;
 		mr.material = fillMaterial;
 
-		pc = gameObject.AddComponent (typeof(PolygonCollider2D)) as PolygonCollider2D;
+		pc = transform.Find ("WeakSpot").GetComponent<PolygonCollider2D>();
 		SetupSides();
 	}
 

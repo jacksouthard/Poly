@@ -10,10 +10,8 @@ public class BoosterPart : Part {
 
 	ParticleSystem ps;
 	Rigidbody2D rb;
-	PolyController pc;
 
 	void Start () {
-		pc = GetComponentInParent<PolyController> ();
 		rb = transform.GetComponentInParent<Rigidbody2D> ();
 		ps = GetComponentInChildren<ParticleSystem> ();
 	}

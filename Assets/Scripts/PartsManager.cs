@@ -65,6 +65,7 @@ public class PartsManager : NetworkBehaviour {
 	public void CmdSpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
 		GameObject prefab = projectiles [projectileIndex];
 		spawnPos += Vector3.forward * 1f; // shift back in layers
+
 		GameObject newProjectile = Instantiate (prefab, spawnPos, spawnRot);
 		Projectile projectileScript = newProjectile.GetComponent<Projectile> ();
 		newProjectile.GetComponent<Rigidbody2D> ().velocity = newProjectile.transform.up * projectileScript.speed;
