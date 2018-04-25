@@ -33,9 +33,11 @@ public class BoosterPart : Part {
 	}
 
 	public void Deactivate () {
-		pc.speedBoost -= boost;
-		ps.Stop ();
-		active = false;
+		if (active) {
+			pc.speedBoost -= boost;
+			ps.Stop ();
+			active = false;
+		}
 	}
 
 	bool ShouldBeActive () {

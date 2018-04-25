@@ -74,11 +74,11 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 2
+  m_LinearDrag: 5
   m_AngularDrag: 0.9
   m_GravityScale: 0
   m_Material: {fileID: 0}
-  m_Interpolate: 0
+  m_Interpolate: 2
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -108,9 +108,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1237349ca86b3420996fb90ccebd8d0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fillMaterial: {fileID: 2100000, guid: af12220155e484ce4954ba8f21882e98, type: 2}
+  speedBoost: 1
   sidePrefab: {fileID: 129896, guid: 30371722f34f44e43acbc75b86fe2535, type: 2}
   sidesContainer: {fileID: 150636}
+  fillMaterial: {fileID: 2100000, guid: af12220155e484ce4954ba8f21882e98, type: 2}
+  alive: 1
 --- !u!114 &11482686
 MonoBehaviour:
   m_ObjectHideFlags: 1

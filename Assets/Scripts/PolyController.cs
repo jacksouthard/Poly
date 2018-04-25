@@ -183,7 +183,7 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		// limit velocity
-		rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxVelocity * speedBoost);
+//		rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxVelocity * speedBoost);
 	}
 
 	void Rotate ()
