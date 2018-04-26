@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class NetworkManagerScript : NetworkManager {
 	public static NetworkManagerScript instance;
 
+	public Text playText;
+
 	public enum RunAs
 	{
 		menu,
@@ -28,5 +30,11 @@ public class NetworkManagerScript : NetworkManager {
 		} else if (runAs == RunAs.client) {
 			StartClient ();
 		} 
+	}
+
+	public void JoinGame () {
+		// TODO test if server is active
+		StartClient();
+		playText.text = "Loading";
 	}
 }
