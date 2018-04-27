@@ -37,13 +37,6 @@ public class PolyController : NetworkBehaviour {
 
 	// visuals
 	public Material fillMaterial;
-	private Color[] playerColors = new Color[] {
-		new Color(0.30f, 0.63f, 0.73f),
-		new Color(0.85f, 0.63f, 0.28f),
-		new Color(0.77f, 0.32f, 0.38f),
-		new Color(0.59f, 0.45f, 0.82f),
-		new Color(0.33f, 0.72f, 0.33f)
-	};
 
 	// collection
 	float collectionCooldownAfterDamage = 2f;
@@ -134,7 +127,7 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		StartCollectionCooldown ();
-		int segmentsCount = Mathf.FloorToInt(damageInSides / 0.2f / 2f); // the value of segments
+		int segmentsCount = Mathf.CeilToInt(damageInSides / 0.2f / 2f); // the value of segments
 		if (ai) {
 			RelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
 		} else if (isLocalPlayer) {
@@ -485,7 +478,11 @@ public class PolyController : NetworkBehaviour {
 		AIRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
 	}
 	void AIRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
-		PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot);
+		PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
+	}
+
+	public Color GetPlayerColor () {
+		return PartsManager.instance.playerColors [playerNumber];
 	}
 
 	// RENDERING --------------------------------------------------------------------------------------------------------------
@@ -583,7 +580,7 @@ public class PolyController : NetworkBehaviour {
 
 		mf.mesh = m;
 
-		mr.material.color = playerColors[playerNumber];
+		mr.material.color = PartsManager.instance.playerColors[playerNumber];
 
 		// UPDATE POLYGON COLLIDER
 		// the points are all the verticies, minus V0 (center vertex of mesh)

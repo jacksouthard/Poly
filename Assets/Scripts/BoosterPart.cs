@@ -14,6 +14,8 @@ public class BoosterPart : Part {
 	void Start () {
 		rb = transform.GetComponentInParent<Rigidbody2D> ();
 		ps = GetComponentInChildren<ParticleSystem> ();
+		ParticleSystem.MainModule ma = ps.main;
+		ma.startColor = GetComponentInParent<PolyController> ().GetPlayerColor ();
 	}
 	
 	void Update () {

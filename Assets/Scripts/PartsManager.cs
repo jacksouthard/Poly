@@ -13,6 +13,14 @@ public class PartsManager : NetworkBehaviour {
 	public float initialDetachDistance;
 	public float detachForce;
 
+	public Color[] playerColors = new Color[] {
+		new Color(0.30f, 0.63f, 0.73f),
+		new Color(0.85f, 0.63f, 0.28f),
+		new Color(0.77f, 0.32f, 0.38f),
+		new Color(0.59f, 0.45f, 0.82f),
+		new Color(0.33f, 0.72f, 0.33f)
+	};
+
 	[Header("Spawning")]
 	public float spawnRadius;
 	private float spawnTimer;
@@ -61,7 +69,7 @@ public class PartsManager : NetworkBehaviour {
 		NetworkServer.Spawn (part);
 	}
 
-	public void SpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+	public void SpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot, int playerNum) {
 		GameObject prefab = projectiles [projectileIndex];
 		spawnPos += Vector3.forward * 1f; // shift back in layers
 
@@ -71,8 +79,10 @@ public class PartsManager : NetworkBehaviour {
 
 		NetworkServer.Spawn (newProjectile);
 		Destroy (newProjectile, projectileScript.lifeTime);
-	}
 
+		projectileScript.RelaySetColor (playerNum);
+	}
+		
 	public void PartDestoryed ()
 	{
 		partCount--;
