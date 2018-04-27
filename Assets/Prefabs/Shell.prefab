@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   live: 1
-  speed: 3
+  speed: 6
   lifeTime: 4
 --- !u!114 &114939954353275732
 MonoBehaviour:

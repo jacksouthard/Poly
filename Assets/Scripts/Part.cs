@@ -14,7 +14,7 @@ public class Part : MonoBehaviour {
 	void Awake () {
 		health = maxHealth;
 		pc = GetComponentInParent<PolyController> ();
-		if (GetComponentInParent<PolyController> ().isLocalPlayer) {
+		if (GetComponentInParent<PolyController> ().master) {
 			master = true;
 		}
 	}

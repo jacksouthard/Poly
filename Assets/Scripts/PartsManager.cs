@@ -16,9 +16,9 @@ public class PartsManager : NetworkBehaviour {
 	[Header("Spawning")]
 	public float spawnRadius;
 	private float spawnTimer;
-	private float spawnInterval = 0.5f;
+	private float spawnInterval = 0.1f; // 0.5f
 	private int partCount = 0;
-	private int partCountMax = 30;
+	private int partCountMax = 60; // 30
 
 	void Awake () {
 		instance = this;
@@ -61,8 +61,7 @@ public class PartsManager : NetworkBehaviour {
 		NetworkServer.Spawn (part);
 	}
 
-	[Command]
-	public void CmdSpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+	public void SpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
 		GameObject prefab = projectiles [projectileIndex];
 		spawnPos += Vector3.forward * 1f; // shift back in layers
 
@@ -89,6 +88,16 @@ public class PartsManager : NetworkBehaviour {
 		return partsData[0];
 	}
 
+	public PartData GetDataWithName (string name) {
+		foreach (var part in partsData) {
+			if (part.prefab.name == name) {
+				return part;
+			}
+		}
+		print ("No part found with name: " + name);
+		return partsData[0];
+	}
+
 	public int GetIDFromName (string name) {
 		foreach (var part in partsData) {
 			if (part.prefab.name == name) {
@@ -105,4 +114,11 @@ public class PartData {
 	public int partID;
 	public Sprite sprite;
 	public GameObject prefab;
+
+	public enum PartType {
+		attack,
+		booster,
+		none
+	}
+	public PartType type;
 }

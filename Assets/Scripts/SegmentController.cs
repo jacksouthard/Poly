@@ -30,7 +30,7 @@ public class SegmentController : MonoBehaviour {
 			if (collectTimer <= 0f) {
 				// collect
 				if (!fake) {
-					target.GetComponent<PolyController> ().CmdSegmentStartDestory (this.gameObject);
+					target.GetComponent<PolyController> ().HandleSegmentStartDestory (this.gameObject);
 				}
 				collected = true;
 			}

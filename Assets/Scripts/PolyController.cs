@@ -3,12 +3,12 @@ using System.Collections;
 using UnityEngine.Networking;
 
 public class PolyController : NetworkBehaviour {
+	public bool ai = false;
+	AIController aiCon;
+	public bool master = false;
 
-	// controls
-	GameObject leftTouchArea;
-	GameObject rightTouchArea;
-	bool useTouch = true;
-	bool useKeyboard = true;
+	[SyncVar]
+	public int attackPartsScore;
 
 	// movement
 	float speed = 10f;
@@ -20,10 +20,9 @@ public class PolyController : NetworkBehaviour {
 	float startingSides = 2.2f;
 	float sidesCountMin = 2f;
 	int sidesCountMax = 12;
-	float sidesCountIncrement = 0.5f;
 
 	// side prefabs
-	GameObject[] sidesGOArray;
+	public GameObject[] sidesGOArray;
 	public GameObject sidePrefab;
 	public GameObject sidesContainer;
 
@@ -32,7 +31,7 @@ public class PolyController : NetworkBehaviour {
 	CircleCollider2D attractZone;
 	MeshFilter mf;
 	MeshRenderer mr;
-	PolygonCollider2D pc;
+	PolygonCollider2D weakZoneCollider;
 
 	// visuals
 	public Material fillMaterial;
@@ -44,9 +43,6 @@ public class PolyController : NetworkBehaviour {
 		new Color(0.33f, 0.72f, 0.33f)
 	};
 
-	// ui
-	Animator deathAnimator;
-
 	// collection
 	float collectionCooldownAfterDamage = 2f;
 	float collectionCooldown;
@@ -54,23 +50,36 @@ public class PolyController : NetworkBehaviour {
 
 	// misc
 	public bool alive = true; // only matters locally
-	GameObject playerCamera;
 
 	// STARTING ---------------------------------------------------------------------------------------
 
 	void Awake () {
+
 		SetupRendering();
+
 	}
 
 	void Start() {
+		aiCon = GetComponent<AIController> ();
+		if (aiCon != null && isServer) {
+			ai = true;
+		}
+		if (isLocalPlayer || ai) {
+			master = true;
+		}
+
 		// set up references
 		rb = GetComponent<Rigidbody2D>();
 		attractZone = GetComponent<CircleCollider2D> ();
-		deathAnimator = GameObject.Find ("Canvas").transform.Find ("GameOver").GetComponent<Animator> ();
 
-		if (isLocalPlayer) {
-			CmdChangeSidesCount (startingSides);
-			CmdChangePlayerNumber (Random.Range (0, 4));
+		if (master) {
+			if (isLocalPlayer) {
+				CmdChangeSidesCount (startingSides);
+				CmdChangePlayerNumber (Random.Range (0, 4));
+			} else if (ai) {
+				ChangeSidesCount (startingSides);
+				ChangePlayerNumber (Random.Range (0, 4));
+			}
 		} else {
 			SetSidesCount (sidesCount);
 			ExpressPartData (partData);
@@ -81,13 +90,16 @@ public class PolyController : NetworkBehaviour {
 
 	// SidesCount network syncing
 	[SyncVar(hook="SetSidesCount")]
-	private float sidesCount;
+	public float sidesCount;
 
 	[SyncVar(hook="SetPlayerNumber")]
 	private int playerNumber;
 
 	[Command]
-	void CmdChangeSidesCount (float newValue) {
+	public void CmdChangeSidesCount (float newValue) {
+		ChangeSidesCount (newValue);
+	}
+	public void ChangeSidesCount (float newValue) {
 		if (newValue < sidesCountMin) {
 			partData = "------------------------";
 			if (!isClient) {
@@ -109,15 +121,26 @@ public class PolyController : NetworkBehaviour {
 
 	public void TakeDamage (float damage, Transform side) {
 		float damageInSides = damage * damageToSidesRatio;
-		CmdChangeSidesCount (sidesCount - damageInSides);
+		if (ai) {
+			ChangeSidesCount (sidesCount - damageInSides);
+		} else if (isLocalPlayer) {
+			CmdChangeSidesCount (sidesCount - damageInSides);
+		}
 
 		StartCollectionCooldown ();
 		int segmentsCount = Mathf.FloorToInt(damageInSides / 0.2f / 2f); // the value of segments
-		CmdRelayBurstSpawn(segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
+		if (ai) {
+			RelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
+		} else if (isLocalPlayer) {
+			CmdRelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
+		}
  	}
 
 	[Command]
 	void CmdRelayBurstSpawn (int count, Vector2 spawnPos, float spawnZ) {
+		RelayBurstSpawn (count, spawnPos, spawnZ);
+	}
+	public void RelayBurstSpawn (int count, Vector2 spawnPos, float spawnZ) {
 		SegmentsManager.instance.SpawnSegmentBurst(count, spawnPos, spawnZ);
 	}
 
@@ -135,6 +158,9 @@ public class PolyController : NetworkBehaviour {
 	// Tell server version of object to change player number/color
 	[Command]
 	void CmdChangePlayerNumber(int newValue) {
+		ChangePlayerNumber (newValue);
+	}
+	public void ChangePlayerNumber(int newValue) {
 		SetPlayerNumber(newValue);
 	}
 
@@ -147,42 +173,12 @@ public class PolyController : NetworkBehaviour {
 		UpdateRendering();
 	}
 		
-	// CAMERA ---------------------------------------------------------------------------------------------
 
-	public override void OnStartLocalPlayer() {
-		CameraSetup();	
-	}
-
-	void CameraSetup () {			
-		// sets up game camera for individual player
-		GameObject playerCameraPrefab = Resources.Load("PlayerCamera") as GameObject;
-		Instantiate(playerCameraPrefab, new Vector3 (0,0, -10), Quaternion.Euler(0,0,0));
-
-		playerCamera = GameObject.Find("PlayerCamera(Clone)");
-		playerCamera.GetComponent<CameraController>().target = this.gameObject.transform;
-
-		leftTouchArea = playerCamera.transform.Find("LeftTouchArea").gameObject;
-		rightTouchArea = playerCamera.transform.Find("RightTouchArea").gameObject;
-	}
 
 	// INPUT ------------------------------------------------------------------------------------------------------------
 	void Update ()
 	{
-		if (isLocalPlayer && alive) {
-			Move ();
-			Rotate ();
-
-			if (Input.GetKeyDown("=")) {
-				CmdChangeSidesCount(sidesCount + sidesCountIncrement);
-			}
-			if (Input.GetKeyDown("-")) {
-				CmdChangeSidesCount(sidesCount - sidesCountIncrement);
-			}
-
-			if (Input.GetKeyDown("0")) { // for testing damage bursts
-				TakeDamage(100f, sidesGOArray[0].transform);
-			}
-
+		if (master) {
 			// collection cooldown
 			if (hasCooldown) {
 				collectionCooldown -= Time.deltaTime;
@@ -191,57 +187,19 @@ public class PolyController : NetworkBehaviour {
 				}
 			}
 		}
-
-		if (Input.GetKeyDown (KeyCode.G)) {
-			print (partData);
-		}
-
-		if (!alive && isLocalPlayer && Input.anyKeyDown) {
-			// respawn if dead
-			deathAnimator.SetTrigger ("Exit");
-			CmdResetPlayer();
-		}
 	}
 
 	// MOVEMENT AND ROTATION ------------------------------------------------------------------------------------
 
-	void Move ()
+	public void Move (Vector2 input)
 	{
-		var moveOffset = Vector2.zero;
-
-		// faking touch for now with mouse controls
-		if (useTouch) {
-			moveOffset = rightTouchArea.GetComponentInChildren<TouchAreaController> ().offset; // TODO optimize later when considering mobile
-		}
-
-		if (useKeyboard && moveOffset == Vector2.zero) {
-			moveOffset = new Vector2 (Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-		}
-
 		// add force to poly
-		if (moveOffset != Vector2.zero) {
-			rb.AddForce (moveOffset * speed * speedBoost);
-		}
-
-		// limit velocity
-//		rb.velocity = Vector2.ClampMagnitude(rb.velocity, maxVelocity * speedBoost);
+		rb.AddForce (input * speed * speedBoost);
 	}
 
-	void Rotate ()
+	public void Rotate (float input)
 	{
-		var rotateOffset = Vector2.zero;
-
-		if (useTouch) {
-			rotateOffset = leftTouchArea.GetComponentInChildren<TouchAreaController> ().offset;
-		}
-
-		if (useKeyboard && rotateOffset == Vector2.zero) {
-			rotateOffset = new Vector2 (0, Input.GetAxis("Rotation"));
-		}
-
-		if (rotateOffset != Vector2.zero) {
-			rb.AddTorque(rotateOffset.y * rotationSpeed);
-		}
+		rb.AddTorque(input * rotationSpeed);
 	}
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
@@ -264,29 +222,28 @@ public class PolyController : NetworkBehaviour {
 		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
 			collider.enabled = false;
 		}
-
-		if (isLocalPlayer) {
-			deathAnimator.SetTrigger ("Enter");
-		}
 	}
 
 	[Command]
-	void CmdResetPlayer () {
+	public void CmdResetPlayer () {
+		ResetPlayer ();
+	}
+	public void ResetPlayer () {
 		SetSidesCount (startingSides);
 
-		ResetPlayer ();
+		ResetPlayerLocal ();
 		RpcResetPlayer ();
 	}
 
 	[ClientRpc]
 	void RpcResetPlayer () {
 		// local player (sometimes client) has authority over its own movement
-		ResetPlayer();
+		ResetPlayerLocal();
 
 	}
 
-	void ResetPlayer () {
-		if (isLocalPlayer) {
+	void ResetPlayerLocal () {
+		if (master) {
 			transform.position = Vector3.zero;
 			GetComponent<Rigidbody2D> ().velocity = Vector2.zero;
 			GetComponent<Rigidbody2D> ().angularVelocity = 0f;
@@ -316,17 +273,23 @@ public class PolyController : NetworkBehaviour {
 
 	// Handle a collectable segment entering collect zone around poly
 	void OnTriggerEnter2D (Collider2D other) {
-		if (other.CompareTag("Collectable") && !hasCooldown && isLocalPlayer) {
-			if (isLocalPlayer) {
-				other.gameObject.GetComponent<SegmentController> ().StartTracking (gameObject.transform, false);
-			} else {
-				other.gameObject.GetComponent<SegmentController> ().StartTracking (gameObject.transform, true);
-			}
+		if (other.CompareTag("Collectable") && !hasCooldown && master) {
+			other.gameObject.GetComponent<SegmentController> ().StartTracking (gameObject.transform, false);
 		}
 	}
 
+	public void HandleSegmentStartDestory (GameObject segment) {
+		if (isLocalPlayer) {
+			CmdSegmentStartDestory (segment);
+		} else if (ai) {
+			SegmentStartDestory (segment);
+		}
+	}
 	[Command]
 	public void CmdSegmentStartDestory (GameObject segment) {
+		SegmentStartDestory (segment);
+	}
+	public void SegmentStartDestory (GameObject segment) {
 		Destroy (segment);
 		SegmentsManager.instance.SegmentDestoryed ();
 		Collect(0.2f);
@@ -355,30 +318,44 @@ public class PolyController : NetworkBehaviour {
 	string partData = "------------------------"; // each set of 00's represents the part data of one side
 
 	public void AttachPartRequest (GameObject part, GameObject side) {
-		CmdPartStartDestroy (part.GetComponent<NetworkIdentity>().netId, int.Parse(side.name));
+		if (isLocalPlayer) {
+			CmdPartStartDestroy (part.GetComponent<NetworkIdentity> ().netId, int.Parse (side.name));
+		} else if (ai) {
+			PartStartDestroy (part.GetComponent<NetworkIdentity> ().netId, int.Parse (side.name));
+		}
 	}
 
 	[Command]
 	void CmdPartStartDestroy (NetworkInstanceId partNetID, int sideIndex) {
+		PartStartDestroy (partNetID, sideIndex);
+	}
+	void PartStartDestroy (NetworkInstanceId partNetID, int sideIndex) {
 		GameObject part = NetworkServer.FindLocalObject (partNetID);
 		AlterPartInData (part.GetComponent<PartController> ().id, sideIndex);
 		Destroy (part);
 		PartsManager.instance.PartDestoryed ();
 	}
 
-	[Command]
-	void CmdDestroyPart (int sideIndex) {
+	void DestroyPart (int sideIndex) {
+		DestoryPart (sideIndex);
+	}
+	void DestoryPart (int sideIndex) {
 		AlterPartInData (-1, sideIndex); // -1 is code for --
 	}
 
 	public void DestroyPartRequest (GameObject side) {
 		if (isLocalPlayer) {
-			CmdDestroyPart (int.Parse (side.name));
+			DestroyPart (int.Parse (side.name));
+		} else if (ai) {
+			DestoryPart (int.Parse (side.name));
 		}
 	}
 
 	[Command]
 	void CmdRelaySpawnDetatchedPart (int partID, Vector3 spawnPos, Quaternion spawnRot) {
+		RelaySpawnDetatchedPart (partID, spawnPos, spawnRot);
+	}
+	void RelaySpawnDetatchedPart (int partID, Vector3 spawnPos, Quaternion spawnRot) {
 		PartsManager.instance.SpawnDetachedPart (partID, spawnPos, spawnRot);
 	}
 
@@ -425,22 +402,37 @@ public class PolyController : NetworkBehaviour {
 					newPart.name = data.prefab.name;
 					newPart.transform.localPosition = Vector3.zero;
 					newPart.transform.localRotation = Quaternion.identity; 
+
+					if (isServer && data.type == PartData.PartType.attack) {
+						attackPartsScore++;
+					}
+					if (ai) {
+						aiCon.UpdatePartTypes (data.type, i);
+					}
 				}
 			} else {
 				for (int c = 0; c < sidesGOArray[i].transform.childCount; c++) {
+					// destory part on now empty side
 					GameObject part = sidesGOArray [i].transform.GetChild (c).gameObject;
 					BoosterPart possibleBooster = part.GetComponent<BoosterPart> ();
 					if (possibleBooster != null) {
 						possibleBooster.Deactivate ();
 					}
+
+					if (isServer && PartsManager.instance.GetDataWithName(part.name).type == PartData.PartType.attack) {
+						attackPartsScore--;
+					}
+					if (ai) {
+						aiCon.UpdatePartTypes (PartData.PartType.none, i);
+					}
+
 					Destroy (part);
 				}
 			}
 		}
 	}
 
-	[Command]
-	void CmdRelayManualBackupExpressPartData () {
+	void RelayManualBackupExpressPartData () {
 		RpcManualBackupExpressPartData ();
 	}
 
@@ -452,23 +444,33 @@ public class PolyController : NetworkBehaviour {
 	public void RelayDestoryProjectile (GameObject projectile) {
 		if (isLocalPlayer) {
 			CmdDestoryProjectile (projectile.GetComponent<NetworkIdentity> ().netId);
+		} else if (ai) {
+			DestoryProjectile (projectile.GetComponent<NetworkIdentity> ().netId);
 		}
 	}
 
 	[Command]
 	void CmdDestoryProjectile (NetworkInstanceId netID) {
-		Destroy (NetworkServer.FindLocalObject (netID));
+		DestoryProjectile (netID);
 	}
+	void DestoryProjectile (NetworkInstanceId netID) {
+		Destroy (NetworkServer.FindLocalObject (netID));
+	} 
 
 	public void RelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
 		if (isLocalPlayer) {
 			CmdRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+		} else if (ai) {
+			AIRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
 		}
 	}
 
 	[Command]
-	public void CmdRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
-		PartsManager.instance.CmdSpawnProjectile (projectileIndex, spawnPos, spawnRot);
+	void CmdRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+		AIRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+	}
+	void AIRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+		PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot);
 	}
 
 	// RENDERING --------------------------------------------------------------------------------------------------------------
@@ -483,7 +485,7 @@ public class PolyController : NetworkBehaviour {
 		mr = gameObject.AddComponent (typeof(MeshRenderer)) as MeshRenderer;
 		mr.material = fillMaterial;
 
-		pc = transform.Find ("WeakSpot").GetComponent<PolygonCollider2D>();
+		weakZoneCollider = transform.Find ("WeakSpot").GetComponent<PolygonCollider2D>();
 		SetupSides();
 	}
 
@@ -577,7 +579,7 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		// set path
-		pc.SetPath (0, points);
+		weakZoneCollider.SetPath (0, points);
 
 		// POSITION SIDE PREFABS
 
@@ -616,22 +618,33 @@ public class PolyController : NetworkBehaviour {
 			} else {
 				if (sideGO.activeInHierarchy) {
 					// make inactive, but first check if it has an attached part
-					if (isLocalPlayer && sideGO.transform.childCount > 0) {
+					if (master && sideGO.transform.childCount > 0) {
 						// if part is not already detaching
 						if (!sideGO.GetComponentInChildren<Part> ().detaching) {
 							// spawn detached part
 							sideGO.GetComponentInChildren<Part> ().detaching = true;
 							int detachedID = PartsManager.instance.GetIDFromName (sideGO.transform.GetChild (0).name);
-							CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+							if (isLocalPlayer) {
+								CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+							} else if (ai) {
+								RelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+							}
 
 							// destory part on poly
-							CmdDestroyPart (i);
-							CmdRelayManualBackupExpressPartData ();
+							if (isServer) {
+								DestroyPart (i);
+								RelayManualBackupExpressPartData ();
+							}
 						}
 					}
 					sideGO.SetActive (false);
 				}
 			}
+		}
+
+		// update AI if possible
+		if (ai) {
+			aiCon.UpdateFullSideStatus ();
 		}
 	}
 

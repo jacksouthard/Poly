@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 5879714}
   - component: {fileID: 11495638}
   - component: {fileID: 11482686}
+  - component: {fileID: 114999550512501984}
   m_Layer: 0
   m_Name: Poly
   m_TagString: Player
@@ -109,11 +110,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1237349ca86b3420996fb90ccebd8d0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ai: 0
+  master: 0
   speedBoost: 1
+  sidesGOArray: []
   sidePrefab: {fileID: 129896, guid: 30371722f34f44e43acbc75b86fe2535, type: 2}
   sidesContainer: {fileID: 150636}
   fillMaterial: {fileID: 2100000, guid: af12220155e484ce4954ba8f21882e98, type: 2}
   alive: 1
+  sidesCount: 0
 --- !u!114 &11482686
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -236,3 +241,14 @@ PolygonCollider2D:
       - {x: -0.5877852, y: -0.80901706}
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
+--- !u!114 &114999550512501984
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 183122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8eeb54bccbea4abea72934f6b36d80c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
