@@ -11,9 +11,11 @@ public class PolyController : NetworkBehaviour {
 	public int attackPartsScore;
 
 	// movement
-	float speed = 10f;
+	float speed = 15f;
 	float rotationSpeed = 10f;
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
+	float minSpeedMultiplier = 0.5f;
+	public float sizeSpeedMultiplier;
 
 	// sides
 	float damageToSidesRatio = 0.01f;
@@ -198,12 +200,12 @@ public class PolyController : NetworkBehaviour {
 	public void Move (Vector2 input)
 	{
 		// add force to poly
-		rb.AddForce (input * speed * speedBoost);
+		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier);
 	}
 
 	public void Rotate (float input)
 	{
-		rb.AddTorque(input * rotationSpeed);
+		rb.AddTorque(input * rotationSpeed * sizeSpeedMultiplier);
 	}
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
@@ -301,6 +303,9 @@ public class PolyController : NetworkBehaviour {
 
 	void Collect (float sidesIncrement) {
 		sidesCount += sidesIncrement;
+		if (sidesCount > sidesCountMax) {
+			sidesCount = sidesCountMax;
+		}
 
 		if (!isClient) {
 			UpdateRendering (); // only has to happen on server
@@ -314,6 +319,12 @@ public class PolyController : NetworkBehaviour {
 
 	void EndCollectionCooldown () {
 		hasCooldown = false;
+	}
+
+	void UpdateSizeSpeedMultiplier () {
+		float sizeRange = sidesCountMax - sidesCountMin;
+		float sizeRatio = (sidesCount - sidesCountMin) / sizeRange;
+		sizeSpeedMultiplier = minSpeedMultiplier * (2 - sizeRatio);
 	}
 		
 	// PARTS --------------------------------------------------------------------------------------------------------------------------------
@@ -513,6 +524,8 @@ public class PolyController : NetworkBehaviour {
 	// Update mesh and polygon collider, and sides geometry
 	void UpdateRendering ()
 	{
+		UpdateSizeSpeedMultiplier ();
+
 		float[] angles = CalculateAngles (sidesCount);
 		int anglesCount = angles.Length;
 		int vertexCount = anglesCount + 1;  //includes center
