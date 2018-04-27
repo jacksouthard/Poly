@@ -11,6 +11,7 @@ public class AIController : NetworkBehaviour {
 	bool sidesFull = false;
 
 	public float visionRange;
+	public float rangedHoldDst;
 	public float wanderTime;
 	public float combatUpdateTime;
 	public float maxTimeBeforeUpdate;
@@ -20,9 +21,14 @@ public class AIController : NetworkBehaviour {
 	PartData.PartType[] partTypes = new PartData.PartType[12];
 
 	[Header("Debug")]
+	public int meleeScore = 0;
+	public int rangedScore = 0;
+	bool ranged = false;
+
 	Transform target;
 	Vector2 dirToTarget;
-	Transform targetFrontFacingSide; 
+	float targetRotDir;
+
 	public enum AIState {
 		wandering,
 		collecting,
@@ -62,8 +68,9 @@ public class AIController : NetworkBehaviour {
 			}
 		}
 
-		if (targetFrontFacingSide != null && shouldRotate) {
-			pc.Rotate (CalculateRotation ());
+		if (shouldRotate) {
+			float rotInput = CalculateRotation ();
+			pc.Rotate (rotInput);
 		}
 		pc.Move (dirToTarget);
 	}
@@ -75,8 +82,8 @@ public class AIController : NetworkBehaviour {
 			target = objectOfInterest.transf;
 			if (objectOfInterest.type == ObjectOfInterest.Type.player) {
 				int playerScore = objectOfInterest.transf.GetComponent<PolyController> ().attackPartsScore;
-				if (pc.attackPartsScore + 1 >= playerScore && GetIndexOfPartType (PartData.PartType.attack, false) != -1) {
-					EnterAttack ();
+				if (pc.attackPartsScore + 1 >= playerScore && (GetIndexOfPartType (PartData.PartType.melee, false) != -1 || GetIndexOfPartType (PartData.PartType.ranged, false) != -1)) {
+					EnterAttack (objectOfInterest.distance);
 				} else {
 					EnterFlee ();
 				}
@@ -88,10 +95,6 @@ public class AIController : NetworkBehaviour {
 		} else {
 			// nothing interesting in range
 			EnterWander ();
-		}
-
-		if (shouldRotate) {
-			CalculateMostValuableFrontFacingPart ();
 		}
 //		print ("AI Update. Target: " + target + " State: " + state);
 	}
@@ -116,11 +119,26 @@ public class AIController : NetworkBehaviour {
 		}
 	}
 
-	void EnterAttack () {
+	void EnterAttack (float dstToTarget) {
 		shouldRotate = true;
 		timeUntilTargetUpdate = combatUpdateTime;
 		state = AIState.attacking;
-		UpdateDirToTarget();
+		if (ranged) {
+			if (dstToTarget > rangedHoldDst) {
+				// rush with ranged
+				UpdateDirToTarget ();
+				GetIndexOfPartType (PartData.PartType.ranged);
+			} else {
+				// hold from a distance with ranged
+				UpdateDirToTarget (flip: true);
+				int indexOfRangedWeapon = GetIndexOfPartType (PartData.PartType.ranged, false);
+				UpdateTargetRotation (pc.sidesGOArray [indexOfRangedWeapon].transform);
+			}
+		} else {
+			// melee rush
+			UpdateDirToTarget ();
+			GetIndexOfPartType (PartData.PartType.melee);
+		}
 	}
 
 	void EnterFlee () {
@@ -128,8 +146,22 @@ public class AIController : NetworkBehaviour {
 		timeUntilTargetUpdate = combatUpdateTime;
 		state = AIState.fleeing;
 		UpdateDirToTarget (flip: true);
+
+		int attackSideIndex = GetIndexOfPartType (PartData.PartType.ranged, false);
+		if (attackSideIndex == -1) {
+			attackSideIndex = GetIndexOfPartType (PartData.PartType.melee, false);
+		}
+
+		if (attackSideIndex != -1) {
+			// fleeing with weapon
+			UpdateTargetRotation (pc.sidesGOArray[attackSideIndex].transform);
+		}
 	}
 
+	void UpdateTargetRotation (Transform targetFrontFacingSide) {
+		targetRotDir = (targetFrontFacingSide.localEulerAngles.z % 360f) - 90f;
+	}
+		
 	void UpdateDirToTarget (bool flip = false) {
 		Vector3 dir3D = (target.position - transform.position).normalized;
 		Vector2 dir2D = new Vector2 (dir3D.x, dir3D.y);
@@ -141,46 +173,40 @@ public class AIController : NetworkBehaviour {
 	}
 
 	float CalculateRotation () {
-		float sideAngle = targetFrontFacingSide.eulerAngles.z;
-		float frontFacingAngle = Mathf.Atan2(dirToTarget.y, dirToTarget.x) * Mathf.Rad2Deg + 180f;
-		float angleDiff = Mathf.DeltaAngle (sideAngle, frontFacingAngle) + 90f;
+		Vector2 targetDirRealtime = (target.position - transform.position).normalized;
+		float frontFacingAngle = Mathf.Atan2(targetDirRealtime.y, targetDirRealtime.x) * Mathf.Rad2Deg + 180f;
+		float targetPolyAngle = -targetRotDir + frontFacingAngle;
+		float currentPolyAngle = transform.eulerAngles.z % 360f;
+		float angleDiff = Mathf.DeltaAngle (targetPolyAngle, currentPolyAngle);
+//		print ("C: " + currentPolyAngle + " T: " + targetPolyAngle + " Diff: " + angleDiff);
+
 		angleDiff = Mathf.Clamp (angleDiff, -180f, 180f);
-		float smoothDiff = angleDiff / 180f;
+		float smoothDiff = -angleDiff / 180f;
 		return smoothDiff;
 	}
 
-	void CalculateMostValuableFrontFacingPart () {
-		if (state == AIState.wandering && state == AIState.collecting) {
-//			// move to put booster behind player
-//			int boosterIndex = GetIndexOfPartType (PartData.PartType.booster, false);
-//			if (boosterIndex != -1) {
-//				targetFrontFacingSide = pc.sidesGOArray [GetOppisiteSideIndex (boosterIndex)].transform;
-//			}
-		} else {
-			// must be attacking or fleeing
-			GetIndexOfPartType (PartData.PartType.attack);	
-		}
-	}
-
 	int GetIndexOfPartType (PartData.PartType targetType, bool directSet = true) {
+		int lastIndex = -1;
 		for (int i = 0; i < partTypes.Length; i++) {
 			Transform side = pc.sidesGOArray [i].transform;
 			if (partTypes [i] == targetType && side.gameObject.activeInHierarchy) {
+				// if the sides's part type matches input and side is active
 				if (directSet) {
-					targetFrontFacingSide = side;
+					UpdateTargetRotation (side.transform);
+					break;
 				}
-				return i;
+				// set last index to a valid index of side with input part
+				lastIndex = i;
 			}
 		}
 
-//		print ("No part of type: " + targetType);
-		return -1;
+		return lastIndex;
 	}
 				
 	ObjectOfInterest GetObjectOfInterestInRange () {
 		Collider2D[] collsInRange = Physics2D.OverlapCircleAll (new Vector2 (transform.position.x, transform.position.y), visionRange);
 		if (collsInRange.Length == 0) {
-			return new ObjectOfInterest (ObjectOfInterest.Type.none, null);;
+			return new ObjectOfInterest (ObjectOfInterest.Type.none, null, 0f);;
 		}
 
 		Transform closestCollectable = null;
@@ -203,17 +229,17 @@ public class AIController : NetworkBehaviour {
 						closestDstToPart = dstToColl;
 					}
 				} else if (coll.tag == "Player") {
-					return new ObjectOfInterest (ObjectOfInterest.Type.player, coll.transform);
+					return new ObjectOfInterest (ObjectOfInterest.Type.player, coll.transform, dstToColl);
 				}
 			}
 		}
 
 		if (closestCollectable == null) {
-			return new ObjectOfInterest (ObjectOfInterest.Type.none, null);
+			return new ObjectOfInterest (ObjectOfInterest.Type.none, null, 0f);
 		} else if (closestAttachable != null && !sidesFull) {
-			return new ObjectOfInterest (ObjectOfInterest.Type.part, closestAttachable);
+			return new ObjectOfInterest (ObjectOfInterest.Type.part, closestAttachable, 0f);
 		} else {
-			return new ObjectOfInterest (ObjectOfInterest.Type.segment, closestCollectable);
+			return new ObjectOfInterest (ObjectOfInterest.Type.segment, closestCollectable, 0f);
 		}
 	}
 
@@ -226,14 +252,40 @@ public class AIController : NetworkBehaviour {
 		}
 		public Type type;
 		public Transform transf;
+		public float distance;
 
-		public ObjectOfInterest (Type _type, Transform _transform) {
+		public ObjectOfInterest (Type _type, Transform _transform, float _distance) {
 			type = _type;
 			transf = _transform;
+			distance = _distance;
 		}
 	}
 
 	public void UpdatePartTypes (PartData.PartType modifiedType, int index) {
+		if (modifiedType == PartData.PartType.none) {
+			// part removed
+			if (partTypes [index] == PartData.PartType.ranged) {
+				// ranged part removed
+				rangedScore--;
+			} else if (partTypes [index] == PartData.PartType.melee) {
+				// melee part removed
+				meleeScore--;
+			}
+		}
+		if (modifiedType == PartData.PartType.ranged) {
+			// ranged part added
+			rangedScore++;
+		} else if (modifiedType == PartData.PartType.melee) {
+			// melee part added
+			meleeScore++;
+		} 
+
+		if (meleeScore > rangedScore) {
+			ranged = false;
+		} else {
+			ranged = true;
+		}
+		// set new value
 		partTypes [index] = modifiedType;
 
 		UpdateFullSideStatus ();

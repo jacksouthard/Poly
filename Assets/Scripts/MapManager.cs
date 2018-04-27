@@ -1,13 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class MapManager : MonoBehaviour {
+public class MapManager : NetworkBehaviour {
 	public static MapManager instance;
 
 	Transform bordersContainer;
 	Transform[] borders = new Transform[4];
 	public int mapSize;
+	float spawnRange;
+
+	[Header("AI")]
+	public int targetPolyCount;
+	public GameObject aiPrefab;
+
+	[Header("Debug")]
+	public int aiCount = 0;
 
 	void Awake () {
 		instance = this;
@@ -15,6 +24,31 @@ public class MapManager : MonoBehaviour {
 
 	void Start () {
 		SetupBorders ();
+
+		if (isServer) {
+			spawnRange = (mapSize / 2f) - 5f;
+			Populate ();
+		}
+	}
+
+	void Populate () {
+		for (int i = 0; i < targetPolyCount; i++) {
+			SpawnAI ();
+		}
+	}
+
+	public void AIDie () {
+		aiCount--;
+		SpawnAI ();
+	}
+
+
+	void SpawnAI () {
+		Vector3 randomPos = new Vector3 (Random.Range (-spawnRange, spawnRange), Random.Range (-spawnRange, spawnRange), 0f);
+		GameObject newAI = Instantiate (aiPrefab, randomPos, Quaternion.identity);
+		NetworkServer.Spawn (newAI);
+
+		aiCount++;
 	}
 
 	void SetupBorders () {

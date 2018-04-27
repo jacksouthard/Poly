@@ -395,8 +395,10 @@ MonoBehaviour:
   matchSize: 4
   isNetworkActive: 0
   matchMaker: {fileID: 0}
+  master: 0
   playText: {fileID: 1025567755}
-  runAs: 0
+  playerCount: 0
+  runAs: 2
 --- !u!1 &538002887
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,8 +6,12 @@ using UnityEngine.UI;
 
 public class NetworkManagerScript : NetworkManager {
 	public static NetworkManagerScript instance;
+	public bool master = false;
 
 	public Text playText;
+
+	public int playerCount = 0;
+
 
 	public enum RunAs
 	{

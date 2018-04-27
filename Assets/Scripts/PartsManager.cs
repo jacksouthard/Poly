@@ -116,7 +116,8 @@ public class PartData {
 	public GameObject prefab;
 
 	public enum PartType {
-		attack,
+		melee,
+		ranged,
 		booster,
 		none
 	}

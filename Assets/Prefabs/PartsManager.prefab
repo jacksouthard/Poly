@@ -59,11 +59,11 @@ MonoBehaviour:
   - partID: 0
     sprite: {fileID: 21300000, guid: 13cacfe72be2e47bc93c29d184bb4d2d, type: 3}
     prefab: {fileID: 165666, guid: 8a44c579991df4a92856ff32598ee87b, type: 2}
-    type: 0
+    type: 1
   - partID: 1
     sprite: {fileID: 21300000, guid: 35ede5fedfec84c4b9a23c5b5beaccab, type: 3}
     prefab: {fileID: 170578, guid: 7ea297f1d34d64179923d3d784181929, type: 2}
-    type: 1
+    type: 2
   - partID: 2
     sprite: {fileID: 21300000, guid: e034ce8bc9572497ebe8d93d6881ba98, type: 3}
     prefab: {fileID: 120176, guid: e9abad5fb2bd343bdab7aa6af0abff14, type: 2}

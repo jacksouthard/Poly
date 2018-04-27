@@ -12,7 +12,7 @@ public class PolyController : NetworkBehaviour {
 
 	// movement
 	float speed = 10f;
-	float rotationSpeed = 5f;
+	float rotationSpeed = 10f;
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
 
 	// sides
@@ -101,6 +101,10 @@ public class PolyController : NetworkBehaviour {
 	}
 	public void ChangeSidesCount (float newValue) {
 		if (newValue < sidesCountMin) {
+			if (ai) { // b/c AI dont respawn
+				MapManager.instance.AIDie();
+				Destroy (gameObject);
+			}
 			partData = "------------------------";
 			if (!isClient) {
 				ExpressPartData (partData); // only needs to happen on server, not host
@@ -403,7 +407,7 @@ public class PolyController : NetworkBehaviour {
 					newPart.transform.localPosition = Vector3.zero;
 					newPart.transform.localRotation = Quaternion.identity; 
 
-					if (isServer && data.type == PartData.PartType.attack) {
+					if (isServer && (data.type == PartData.PartType.melee || data.type == PartData.PartType.ranged)) {
 						attackPartsScore++;
 					}
 					if (ai) {
@@ -419,7 +423,7 @@ public class PolyController : NetworkBehaviour {
 						possibleBooster.Deactivate ();
 					}
 
-					if (isServer && PartsManager.instance.GetDataWithName(part.name).type == PartData.PartType.attack) {
+					if (isServer && (PartsManager.instance.GetDataWithName(part.name).type == PartData.PartType.melee || PartsManager.instance.GetDataWithName(part.name).type == PartData.PartType.ranged)) {
 						attackPartsScore--;
 					}
 					if (ai) {
