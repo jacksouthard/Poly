@@ -11,17 +11,17 @@ public class PolyController : NetworkBehaviour {
 	public int attackPartsScore;
 
 	// movement
-	float speed = 15f;
-	float rotationSpeed = 10f;
+	const float speed = 15f;
+	const float rotationSpeed = 10f;
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
-	float minSpeedMultiplier = 0.5f;
+	const float minSpeedMultiplier = 0.5f;
 	public float sizeSpeedMultiplier;
 
 	// sides
-	float damageToSidesRatio = 0.01f;
-	float startingSides = 2.2f;
-	float sidesCountMin = 2f;
-	int sidesCountMax = 12;
+	const float damageToSidesRatio = 0.01f;
+	const float startingSides = 2.4f;
+	const float sidesCountMin = 2.2f;
+	const int sidesCountMax = 12;
 
 	// side prefabs
 	public GameObject[] sidesGOArray;
@@ -39,6 +39,7 @@ public class PolyController : NetworkBehaviour {
 	public Material fillMaterial;
 
 	// collection
+	float segmentValue = 0.2f;
 	float collectionCooldownAfterDamage = 2f;
 	float collectionCooldown;
 	bool hasCooldown = false;
@@ -101,6 +102,7 @@ public class PolyController : NetworkBehaviour {
 				Destroy (gameObject);
 			}
 			partData = "------------------------";
+			DetachAllParts ();
 			if (!isClient) {
 				ExpressPartData (partData); // only needs to happen on server, not host
 			}
@@ -127,13 +129,25 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		StartCollectionCooldown ();
-		int segmentsCount = Mathf.CeilToInt(damageInSides / 0.2f / 2f); // the value of segments
+		int segmentsCount = Mathf.CeilToInt((damageInSides / segmentValue) / 2f); // the value of segments
 		if (ai) {
 			RelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
 		} else if (isLocalPlayer) {
 			CmdRelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
 		}
  	}
+
+	public void HitInWeakSpot () {
+		int segmentsCount = Mathf.CeilToInt((sidesCount / segmentValue) / 2f); // the value of segments
+		 
+		if (ai) {
+			ChangeSidesCount (sidesCountMin - 0.1f);
+			RelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
+		} else if (isLocalPlayer) {
+			CmdChangeSidesCount (sidesCountMin - 0.01f);
+			CmdRelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
+		}
+	}
 
 	[Command]
 	void CmdRelayBurstSpawn (int count, Vector2 spawnPos, float spawnZ) {
@@ -212,15 +226,7 @@ public class PolyController : NetworkBehaviour {
 		alive = false;
 
 		// disable visuals
-		GetComponent<MeshRenderer> ().enabled = false;
-		foreach (var spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
-			spriteRenderer.enabled = false;
-		}
-
-		// disable colliders
-		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
-			collider.enabled = false;
-		}
+		SetPolyActive (false);
 	}
 
 	[Command]
@@ -254,18 +260,20 @@ public class PolyController : NetworkBehaviour {
 
 		alive = true;
 
-		// renable visuals
-		GetComponent<MeshRenderer> ().enabled = true;
-		foreach (var spriteRenderer in GetComponentsInChildren<SpriteRenderer>()) {
-			spriteRenderer.enabled = true;
-		}
-
-		// renable colliders
-		foreach (var collider in GetComponentsInChildren<Collider2D>()) {
-			collider.enabled = true;
-		}
+		// renable poly
+		SetPolyActive (true);
 
 		speedBoost = 1f;
+	}
+
+	void SetPolyActive (bool active) {
+		foreach (var side in sidesGOArray) {
+			side.GetComponent<Collider2D> ().enabled = active;
+			side.GetComponent<SpriteRenderer> ().enabled = active;
+		}
+		transform.Find ("WeakSpot").GetComponent<Collider2D> ().enabled = active;
+		attractZone.enabled = active;
+		mr.enabled = active;
 	}
 
 	// SEGMENTS AND COLLECTION ----------------------------------------------------------------------------------------
@@ -291,7 +299,7 @@ public class PolyController : NetworkBehaviour {
 	public void SegmentStartDestory (GameObject segment) {
 		Destroy (segment);
 		SegmentsManager.instance.SegmentDestoryed ();
-		Collect(0.2f);
+		Collect(segmentValue);
 	}
 
 	void Collect (float sidesIncrement) {
@@ -365,6 +373,32 @@ public class PolyController : NetworkBehaviour {
 	}
 	void RelaySpawnDetatchedPart (int partID, Vector3 spawnPos, Quaternion spawnRot) {
 		PartsManager.instance.SpawnDetachedPart (partID, spawnPos, spawnRot);
+	}
+
+	void DetachAllParts () {
+		for (int i = 0; i < sidesGOArray.Length; i++) {
+			if (sidesGOArray[i].activeInHierarchy && sidesGOArray[i].transform.childCount > 0) {
+				DetachPart (i);
+			}
+		}
+	}
+
+	void DetachPart (int sideIndex) {
+		// spawn detached part
+		GameObject sideGO = sidesGOArray[sideIndex];
+		sideGO.GetComponentInChildren<Part> ().detaching = true;
+		int detachedID = PartsManager.instance.GetIDFromName (sideGO.transform.GetChild (0).name);
+		if (isLocalPlayer) {
+			CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+		} else if (ai) {
+			RelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
+		}
+
+		// destory part on poly
+		if (isServer) {
+			DestroyPart (sideIndex);
+			RelayManualBackupExpressPartData ();
+		}
 	}
 
 	void AlterPartInData (int partID, int sideIndex) {
@@ -536,7 +570,7 @@ public class PolyController : NetworkBehaviour {
 		var uv = new Vector2[vertexCount];
 
 		// Create a vertex for center of polygon
-		var center = new Vector3 (0, 0, 0);
+		var center = Vector3.zero;
 		var centerIndex = 0;
 		vertices [centerIndex] = center; 
 		uv [centerIndex] = new Vector2 (0, 0);
@@ -586,14 +620,22 @@ public class PolyController : NetworkBehaviour {
 		// the points are all the verticies, minus V0 (center vertex of mesh)
 
 		// build array of points for poly collider
-		var points = new Vector2[anglesCount];
-		for (var i = 0; i < anglesCount; i++) {
-			var vertex = vertices [i + 1];
-			points [i] = new Vector2 (vertex.x, vertex.y);
-		}
+		// OLD FROM GENERATING FULL POLY COLLIDER
+//		var points = new Vector2[anglesCount];
+//		for (var i = 0; i < anglesCount; i++) {
+//			var vertex = vertices [i + 1];
+//			points [i] = new Vector2 (vertex.x, vertex.y);
+//		}
+
+		var weakPoints = new Vector2[3];
+		weakPoints [0] = Vector2.zero;
+		weakPoints [1] = new Vector2(vertices[1].x, vertices[1].y);
+		int lastIndex = vertices.Length - 1; 
+		weakPoints [2] = new Vector2(vertices[lastIndex].x, vertices[lastIndex].y);
+
 
 		// set path
-		weakZoneCollider.SetPath (0, points);
+		weakZoneCollider.SetPath (0, weakPoints);
 
 		// POSITION SIDE PREFABS
 
@@ -635,20 +677,7 @@ public class PolyController : NetworkBehaviour {
 					if (master && sideGO.transform.childCount > 0) {
 						// if part is not already detaching
 						if (!sideGO.GetComponentInChildren<Part> ().detaching) {
-							// spawn detached part
-							sideGO.GetComponentInChildren<Part> ().detaching = true;
-							int detachedID = PartsManager.instance.GetIDFromName (sideGO.transform.GetChild (0).name);
-							if (isLocalPlayer) {
-								CmdRelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
-							} else if (ai) {
-								RelaySpawnDetatchedPart (detachedID, sideGO.transform.position, sideGO.transform.rotation);
-							}
-
-							// destory part on poly
-							if (isServer) {
-								DestroyPart (i);
-								RelayManualBackupExpressPartData ();
-							}
+							DetachPart (i);
 						}
 					}
 					sideGO.SetActive (false);

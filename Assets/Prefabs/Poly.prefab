@@ -114,6 +114,7 @@ MonoBehaviour:
   master: 0
   attackPartsScore: 0
   speedBoost: 1
+  sizeSpeedMultiplier: 0
   sidesGOArray: []
   sidePrefab: {fileID: 129896, guid: 30371722f34f44e43acbc75b86fe2535, type: 2}
   sidesContainer: {fileID: 150636}
@@ -193,6 +194,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4808189935867610}
   - component: {fileID: 60256501480088554}
+  - component: {fileID: 114711694140384414}
   m_Layer: 11
   m_Name: WeakSpot
   m_TagString: Untagged
@@ -242,6 +244,17 @@ PolygonCollider2D:
       - {x: -0.5877852, y: -0.80901706}
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
+--- !u!114 &114711694140384414
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1589846727638754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a80d19198e744d0b9df17e43198f39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114999550512501984
 MonoBehaviour:
   m_ObjectHideFlags: 1

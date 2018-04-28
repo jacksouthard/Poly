@@ -14,7 +14,7 @@ public class SegmentsManager : NetworkBehaviour {
 	float burstSpawnDst = 0.2f;
 
 	private float spawnTimer;
-	private float spawnInterval = 0.1f;
+	private float spawnInterval = 0.01f;
 	private int segmentCount = 0;
 	private int segmentCountMax = 200;
 
@@ -48,8 +48,12 @@ public class SegmentsManager : NetworkBehaviour {
 		}
 	}
 
-	public void SpawnSegmentBurst (int count, Vector2 spawnPos, float spawnZ) {
-		StartCoroutine(SpawnBurst (count, spawnPos, spawnZ));
+	public void SpawnSegmentBurst (int count, Vector2 spawnPos, float spawnZ = -1) {
+		if (spawnZ == -1) { // code for poly insta death
+			StartCoroutine (SpawnBurst (count, spawnPos, spawnZ, true));
+		} else {
+			StartCoroutine(SpawnBurst (count, spawnPos, spawnZ, false));
+		}
 	}
 
 	public void SegmentDestoryed ()
@@ -57,9 +61,14 @@ public class SegmentsManager : NetworkBehaviour {
 		segmentCount--;
 	}
 
-	IEnumerator SpawnBurst(int count, Vector2 spawnPos, float spawnZ) {
+	IEnumerator SpawnBurst(int count, Vector2 spawnPos, float spawnZ, bool randomDirections) {
 		for (int i = 0; i < count; i++) {
-			Quaternion spawnRot = Quaternion.Euler (0f, 0f, spawnZ + Random.Range (-burstSpread, burstSpread));
+			Quaternion spawnRot;
+			if (randomDirections) {
+				spawnRot = Quaternion.Euler (0f, 0f, Random.Range (0f, 360f));
+			} else {
+				spawnRot = Quaternion.Euler (0f, 0f, spawnZ + Random.Range (-burstSpread, burstSpread));
+			}
 			Vector3 spawnPos3d = new Vector3 (spawnPos.x, spawnPos.y, 0f);
 			spawnPos3d += spawnRot * (Vector3.up * burstSpawnDst);
 			Quaternion randomSpawnRot = Quaternion.Euler(new Vector3 (0f, 0f, Random.Range (0f, 180f)));

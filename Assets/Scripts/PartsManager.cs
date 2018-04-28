@@ -24,9 +24,9 @@ public class PartsManager : NetworkBehaviour {
 	[Header("Spawning")]
 	public float spawnRadius;
 	private float spawnTimer;
-	private float spawnInterval = 0.1f; // 0.5f
+	private float spawnInterval = 0.5f; 
 	private int partCount = 0;
-	private int partCountMax = 60; // 30
+	private int partCountMax = 20;
 
 	void Awake () {
 		instance = this;
@@ -67,6 +67,7 @@ public class PartsManager : NetworkBehaviour {
 		part.GetComponent<PartController> ().Init(partID);
 
 		NetworkServer.Spawn (part);
+		partCount++;
 	}
 
 	public void SpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot, int playerNum) {

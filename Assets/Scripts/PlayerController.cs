@@ -64,9 +64,13 @@ public class PlayerController : NetworkBehaviour {
 			if (Input.GetKeyDown ("0")) { // for testing damage bursts
 				pc.TakeDamage (100f, pc.sidesGOArray [0].transform);
 			}
+
+			if (Input.GetKeyDown ("9")) { // for testing damage bursts
+				pc.HitInWeakSpot();
+			}
 		}
 
-		if (!pc.alive && isLocalPlayer && Input.anyKeyDown) {
+		if (!pc.alive && isLocalPlayer && Input.GetKeyDown(KeyCode.R)) {
 			// respawn if dead
 			deathAnimator.SetTrigger ("Exit");
 			pc.CmdResetPlayer();
