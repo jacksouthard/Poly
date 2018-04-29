@@ -70,7 +70,13 @@ MonoBehaviour:
     type: 0
   partPrefab: {fileID: 1838061224783800, guid: f31b43c106cc7407ab41d4a622b8065f, type: 2}
   initialDetachDistance: 0.5
-  detachForce: 200
+  detachForce: 20
+  playerColors:
+  - {r: 0.3, g: 0.63, b: 0.73, a: 1}
+  - {r: 0.85, g: 0.63, b: 0.28, a: 1}
+  - {r: 0.77, g: 0.32, b: 0.38, a: 1}
+  - {r: 0.59, g: 0.45, b: 0.82, a: 1}
+  - {r: 0.33, g: 0.72, b: 0.33, a: 1}
   spawnRadius: 48
 --- !u!114 &114707156313804818
 MonoBehaviour:
