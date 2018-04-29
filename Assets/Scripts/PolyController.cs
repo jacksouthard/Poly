@@ -46,6 +46,7 @@ public class PolyController : NetworkBehaviour {
 
 	// misc
 	public bool alive = true; // only matters locally
+	float knockBackMultiplier = 3f;
 
 	// STARTING ---------------------------------------------------------------------------------------
 
@@ -134,6 +135,11 @@ public class PolyController : NetworkBehaviour {
 			RelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
 		} else if (isLocalPlayer) {
 			CmdRelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
+		}
+
+		if (master) {
+			// assign knockback
+			rb.AddForce (-side.up * damage * knockBackMultiplier);
 		}
  	}
 
