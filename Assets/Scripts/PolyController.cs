@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 public class PolyController : NetworkBehaviour {
 	public bool ai = false;
 	AIController aiCon;
+	PlayerController playerCon;
 	public bool master = false;
 
 	[SyncVar]
@@ -61,6 +62,7 @@ public class PolyController : NetworkBehaviour {
 		if (aiCon != null && isServer) {
 			ai = true;
 		}
+		playerCon = GetComponent<PlayerController> ();
 		if (isLocalPlayer || ai) {
 			master = true;
 		}
@@ -101,6 +103,7 @@ public class PolyController : NetworkBehaviour {
 			if (ai) { // b/c AI dont respawn
 				MapManager.instance.AIDie();
 				Destroy (gameObject);
+				return;
 			}
 			partData = "------------------------";
 			DetachAllParts ();
@@ -231,6 +234,9 @@ public class PolyController : NetworkBehaviour {
 	void PlayerDie () {
 		alive = false;
 
+		if (isLocalPlayer) {
+			playerCon.PolyDied ();
+		}
 		// disable visuals
 		SetPolyActive (false);
 	}

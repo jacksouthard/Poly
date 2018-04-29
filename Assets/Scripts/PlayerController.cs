@@ -73,7 +73,12 @@ public class PlayerController : NetworkBehaviour {
 		if (!pc.alive && isLocalPlayer && Input.GetKeyDown(KeyCode.R)) {
 			// respawn if dead
 			deathAnimator.SetTrigger ("Exit");
+			playerCamera.GetComponent<CameraController> ().ZoomIn ();
 			pc.CmdResetPlayer();
 		}
+	}
+
+	public void PolyDied () {
+		playerCamera.GetComponent<CameraController> ().ZoomOut ();
 	}
 }
