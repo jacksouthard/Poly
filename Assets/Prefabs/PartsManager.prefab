@@ -68,6 +68,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: e034ce8bc9572497ebe8d93d6881ba98, type: 3}
     prefab: {fileID: 120176, guid: e9abad5fb2bd343bdab7aa6af0abff14, type: 2}
     type: 0
+  - partID: 3
+    sprite: {fileID: 21300000, guid: 4a64f06fb08a04e219bd0448583a242a, type: 3}
+    prefab: {fileID: 1354906248189604, guid: 4652a11c626094bcbab5d49443282560, type: 2}
+    type: 1
   partPrefab: {fileID: 1838061224783800, guid: f31b43c106cc7407ab41d4a622b8065f, type: 2}
   initialDetachDistance: 0.5
   detachForce: 20
