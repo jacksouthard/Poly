@@ -221,7 +221,7 @@ public class PolyController : NetworkBehaviour {
 
 	public void Rotate (float input)
 	{
-		rb.AddTorque(input * rotationSpeed * sizeSpeedMultiplier);
+		rb.AddTorque(input * rotationSpeed);
 	}
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
