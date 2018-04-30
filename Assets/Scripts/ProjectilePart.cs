@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ProjectilePart : Part {
 	bool shouldFire = false;
+	int polysInRange = 0;
 
 	public int projectileIndex;
 	public float fireRate;
@@ -17,7 +18,7 @@ public class ProjectilePart : Part {
 			if (timeUntilFire > 0f) {
 				timeUntilFire -= Time.deltaTime;
 			}
-			if (shouldFire) {
+			if (polysInRange > 0) {
 				if (timeUntilFire <= 0f) {
 					// fire
 					timeUntilFire = fireRate;
@@ -34,19 +35,20 @@ public class ProjectilePart : Part {
 	}
 	
 	void OnTriggerEnter2D (Collider2D coll) {
-		if (master && coll.GetComponentInParent<PolyController> () != null) {
+		if (master && coll.tag == "Player") {
 			// poly enter fire zone
-			shouldFire = true;
+			polysInRange++;
 		}
 	}
 
 	void OnTriggerExit2D (Collider2D coll) {
-		if (master && coll.GetComponentInParent<PolyController> () != null) {
+		if (master && coll.tag == "Player") {
 			// poly leave fire zone
-			shouldFire = false;
+			polysInRange--;
+			print (polysInRange);
 		}
 	}
-
+		
 	Vector3 GetProjectileSpawnSpawn () {
 		if (projectileSpawns.Length == 1) {
 			return projectileSpawns [0].position;

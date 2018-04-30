@@ -100,13 +100,14 @@ public class PolyController : NetworkBehaviour {
 	}
 	public void ChangeSidesCount (float newValue) {
 		if (newValue < sidesCountMin) {
+			DetachAllParts ();
+
 			if (ai) { // b/c AI dont respawn
 				MapManager.instance.AIDie();
 				Destroy (gameObject);
 				return;
 			}
 			partData = "------------------------";
-			DetachAllParts ();
 			if (!isClient) {
 				ExpressPartData (partData); // only needs to happen on server, not host
 			}
@@ -150,9 +151,9 @@ public class PolyController : NetworkBehaviour {
 		int segmentsCount = Mathf.CeilToInt((sidesCount / segmentValue) / 2f); // the value of segments
 		 
 		if (ai) {
+			RpcSpawnDeathExplosion ();
 			ChangeSidesCount (sidesCountMin - 0.1f);
 			RelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
-			RpcSpawnDeathExplosion ();
 		} else if (isLocalPlayer) {
 			CmdSpawnDeathExplosion ();
 			CmdChangeSidesCount (sidesCountMin - 0.01f);
