@@ -8,9 +8,17 @@ public class Projectile : NetworkBehaviour {
 	public float speed;
 	public float lifeTime;
 
+	Color playerColor;
+
 	public void Hit () {
 		live = false;
 		GetComponentInChildren<SpriteRenderer> ().enabled = false;
+
+		// spawn explosion
+		GameObject prefab = Resources.Load ("Explosion") as GameObject;
+		Vector3 spawnPos = new Vector3 (transform.position.x, transform.position.y, -1f);
+		GameObject explosion = Instantiate (prefab, spawnPos, Quaternion.identity);
+		explosion.GetComponent<Explosion> ().Init (GetComponent<Damaging> ().damage, playerColor);
 	}
 
 	void OnTriggerEnter2D (Collider2D coll) { // projectile must check for hit on random objects like floating parts
@@ -31,9 +39,9 @@ public class Projectile : NetworkBehaviour {
 	}
 		
 	void SetColor (int colorIndex) {
-		Color newColor = PartsManager.instance.playerColors [colorIndex];
+		playerColor = PartsManager.instance.playerColors [colorIndex];
 		foreach (var renderer in GetComponentsInChildren<SpriteRenderer>()) {
-			renderer.color = newColor;
+			renderer.color = playerColor;
 		}
 	}
 

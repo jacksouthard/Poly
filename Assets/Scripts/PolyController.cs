@@ -152,10 +152,33 @@ public class PolyController : NetworkBehaviour {
 		if (ai) {
 			ChangeSidesCount (sidesCountMin - 0.1f);
 			RelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
+			RpcSpawnDeathExplosion ();
 		} else if (isLocalPlayer) {
+			CmdSpawnDeathExplosion ();
 			CmdChangeSidesCount (sidesCountMin - 0.01f);
 			CmdRelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
 		}
+	}
+
+	[Command]
+	void CmdSpawnDeathExplosion () {
+		RpcSpawnDeathExplosion ();
+		if (!isClient) {
+			SpawnDeathExplosion ();
+		}
+	}
+
+	[ClientRpc]
+	void RpcSpawnDeathExplosion () {
+		SpawnDeathExplosion ();
+	}
+
+	void SpawnDeathExplosion () {
+		// spawn explosion
+		GameObject prefab = Resources.Load ("Explosion") as GameObject;
+		Vector3 spawnPos = new Vector3 (transform.position.x, transform.position.y, -1f);
+		GameObject explosion = Instantiate (prefab, spawnPos, Quaternion.identity);
+		explosion.GetComponent<Explosion> ().Init (500f, GetPlayerColor()); // 500f for max size explosion
 	}
 
 	[Command]
