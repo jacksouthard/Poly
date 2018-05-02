@@ -68,6 +68,14 @@ public class PlayerController : NetworkBehaviour {
 			if (Input.GetKeyDown ("9")) { // for testing damage bursts
 				pc.HitInWeakSpot();
 			}
+
+			if (Input.GetKeyDown (KeyCode.Y)) { // for testing time scale
+				Time.timeScale = 0f;
+			}
+
+			if (Input.GetKeyDown (KeyCode.H)) { // for testing time scale
+				Time.timeScale = 1f;
+			}
 		}
 
 		if (!pc.alive && isLocalPlayer && Input.GetKeyDown(KeyCode.R)) {

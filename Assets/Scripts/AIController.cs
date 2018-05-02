@@ -52,10 +52,9 @@ public class AIController : NetworkBehaviour {
 	}
 	
 	void Update () {
-		if (!master) {
+		if (!master || Time.timeScale == 0) {
 			return;
 		}
-
 		if (target == null && state != AIState.wandering) {
 			// target must have been destoryed
 			UpdateTarget();

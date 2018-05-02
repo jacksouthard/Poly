@@ -45,7 +45,6 @@ public class ProjectilePart : Part {
 		if (master && coll.tag == "Player") {
 			// poly leave fire zone
 			polysInRange--;
-			print (polysInRange);
 		}
 	}
 		
