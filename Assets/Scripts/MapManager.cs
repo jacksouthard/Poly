@@ -46,11 +46,15 @@ public class MapManager : NetworkBehaviour {
 
 
 	void SpawnAI () {
-		Vector3 randomPos = new Vector3 (Random.Range (-spawnRange, spawnRange), Random.Range (-spawnRange, spawnRange), 0f);
-		GameObject newAI = Instantiate (aiPrefab, randomPos, Quaternion.identity);
+		GameObject newAI = Instantiate (aiPrefab, GetSpawnPoint(), Quaternion.identity);
 		NetworkServer.Spawn (newAI);
 
 		aiCount++;
+	}
+
+	public Vector3 GetSpawnPoint () {
+		return new Vector3 (Random.Range (-spawnRange, spawnRange), Random.Range (-spawnRange, spawnRange), 0f);
+
 	}
 
 	void SetupBorders () {

@@ -66,6 +66,9 @@ public class PolyController : NetworkBehaviour {
 		if (isLocalPlayer || ai) {
 			master = true;
 		}
+		if (isLocalPlayer && !ai) {
+			transform.position = MapManager.instance.GetSpawnPoint ();
+		}
 
 		// set up references
 		rb = GetComponent<Rigidbody2D>();
