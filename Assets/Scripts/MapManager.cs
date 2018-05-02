@@ -39,7 +39,9 @@ public class MapManager : NetworkBehaviour {
 
 	public void AIDie () {
 		aiCount--;
-		SpawnAI ();
+		while (NetworkManagerScript.instance.playerCount + aiCount < targetPolyCount) {
+			SpawnAI ();
+		}
 	}
 
 

@@ -398,8 +398,8 @@ MonoBehaviour:
   master: 0
   playText: {fileID: 1025567755}
   playerCount: 0
-  freezeServer: 1
-  runAs: 3
+  freezeServer: 0
+  runAs: 2
 --- !u!1 &538002887
 GameObject:
   m_ObjectHideFlags: 0
