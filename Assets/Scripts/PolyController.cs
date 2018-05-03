@@ -202,6 +202,10 @@ public class PolyController : NetworkBehaviour {
 
 		UpdateRendering();
 		attractZone.radius = radius + 0.75f;
+
+		if (isLocalPlayer) {
+			playerCon.UpdatedPolySides (newValue);
+		}
 	}
 
 	// Tell server version of object to change player number/color

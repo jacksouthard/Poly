@@ -13,7 +13,13 @@ public class PlayerController : NetworkBehaviour {
 	// ui
 	Animator deathAnimator;
 
+	// camera
+	int lastZoom = 0;
 	GameObject playerCamera;
+	CameraController camCon;
+	float baseZoom;
+	float zoomPerSide = 0.5f;
+	float zoomTime = 3f;
 
 	float sidesCountIncrement = 0.5f;
 
@@ -40,10 +46,13 @@ public class PlayerController : NetworkBehaviour {
 		Instantiate(playerCameraPrefab, new Vector3 (0,0, -10), Quaternion.Euler(0,0,0));
 
 		playerCamera = GameObject.Find("PlayerCamera(Clone)");
-		playerCamera.GetComponent<CameraController>().target = this.gameObject.transform;
+		camCon = playerCamera.GetComponent<CameraController> ();
+		camCon.target = this.gameObject.transform;
 
 		leftTouchArea = playerCamera.transform.Find("LeftTouchArea").gameObject;
 		rightTouchArea = playerCamera.transform.Find("RightTouchArea").gameObject;
+
+		baseZoom = camCon.zoomedInSize;
 	}
 	
 	void Update () {
@@ -88,5 +97,14 @@ public class PlayerController : NetworkBehaviour {
 
 	public void PolyDied () {
 		playerCamera.GetComponent<CameraController> ().ZoomOut ();
+	}
+
+	public void UpdatedPolySides (float newSides) {
+		int newZoomInt = Mathf.FloorToInt (newSides);
+		if (newZoomInt != lastZoom) {
+			float newZoom = (newSides * zoomPerSide) + baseZoom;
+			camCon.SetZoom (newZoom, zoomTime);
+			lastZoom = newZoomInt;
+		}
 	}
 }

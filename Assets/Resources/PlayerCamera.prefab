@@ -206,7 +206,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2827357e652ad4b6ba0b88f780283d5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoomedInSize: 6
+  zoomedInSize: 4
   zoomedOutSize: 24
   zoomOutTime: 7
   zoomInTime: 1

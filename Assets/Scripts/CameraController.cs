@@ -38,17 +38,17 @@ public class CameraController : MonoBehaviour {
 	}
 
 	public void ZoomOut () {
-		targetZoom = zoomedOutSize;
-		zoomTimer = 0f;
-		zoomTime = zoomOutTime;
-		startingZoom = cam.orthographicSize;
-		zooming = true;
+		SetZoom (zoomedOutSize, zoomOutTime);
 	}
 
 	public void ZoomIn () {
-		targetZoom = zoomedInSize;
+		SetZoom (zoomedInSize, zoomInTime);
+	}
+
+	public void SetZoom (float newZoom, float time) {
+		targetZoom = newZoom;
 		zoomTimer = 0f;
-		zoomTime = zoomInTime;
+		zoomTime = time;
 		startingZoom = cam.orthographicSize;
 		zooming = true;
 	}

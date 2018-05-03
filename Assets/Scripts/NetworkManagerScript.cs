@@ -52,7 +52,7 @@ public class NetworkManagerScript : NetworkManager {
 
 	public override void OnServerConnect (NetworkConnection conn)
 	{
-		print ("Client Con");
+		print ("Client Connect");
 		playerCount++;
 
 		if (frozen) {
@@ -64,7 +64,7 @@ public class NetworkManagerScript : NetworkManager {
 
 	public override void OnServerDisconnect (NetworkConnection conn)
 	{
-		print ("Client Dis");
+		print ("Client Disconnect");
 		playerCount--;
 
 		if (playerCount <= 0) {

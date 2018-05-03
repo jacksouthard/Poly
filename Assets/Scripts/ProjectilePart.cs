@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ProjectilePart : Part {
-	bool shouldFire = false;
 	int polysInRange = 0;
 
 	public int projectileIndex;
