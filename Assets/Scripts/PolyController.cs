@@ -107,8 +107,7 @@ public class PolyController : NetworkBehaviour {
 
 			if (ai) { // b/c AI dont respawn
 				MapManager.instance.AIDie();
-				Destroy (gameObject);
-				return;
+				Destroy (gameObject, 2f);
 			}
 			partData = "------------------------";
 			if (!isClient) {
