@@ -11,7 +11,7 @@ public class PlayerController : NetworkBehaviour {
 	bool useKeyboard = true;
 
 	// ui
-	Animator deathAnimator;
+	Animator deathAnimator; 
 
 	// camera
 	int lastZoom = 0;
