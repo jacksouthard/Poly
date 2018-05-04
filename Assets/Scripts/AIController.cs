@@ -179,7 +179,7 @@ public class AIController : NetworkBehaviour {
 		float angleDiff = Mathf.DeltaAngle (targetPolyAngle, currentPolyAngle);
 //		print ("C: " + currentPolyAngle + " T: " + targetPolyAngle + " Diff: " + angleDiff);
 
-		angleDiff = Mathf.Clamp (angleDiff, -180f, 180f);
+		angleDiff = Mathf.Clamp (angleDiff * 2f, -180f, 180f); // * 2 to increase the rotation speed
 		float smoothDiff = -angleDiff / 180f;
 		return smoothDiff;
 	}

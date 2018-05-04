@@ -159,7 +159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   master: 0
   detaching: 0
-  maxHealth: 150
+  maxHealth: 125
 --- !u!114 &114573687397436992
 MonoBehaviour:
   m_ObjectHideFlags: 1

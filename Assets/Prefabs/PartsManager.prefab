@@ -55,6 +55,7 @@ MonoBehaviour:
   projectiles:
   - {fileID: 1510908314926012, guid: 4907f52fba0ea4d9993d0fde0fb78888, type: 2}
   - {fileID: 1918359643942334, guid: a6c02b22351ea45848249dca13c3f8a8, type: 2}
+  - {fileID: 1911400677086222, guid: 0b5ce225490314cb39d070f8f9133b75, type: 2}
   partsData:
   - partID: 0
     sprite: {fileID: 21300000, guid: 13cacfe72be2e47bc93c29d184bb4d2d, type: 3}
@@ -76,6 +77,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 9c7fa5aa392bd44d3b5a74cd384cd049, type: 3}
     prefab: {fileID: 1876879246813636, guid: 970a7ddbededd4d14a734c6c40ee7f92, type: 2}
     type: 0
+  - partID: 5
+    sprite: {fileID: 21300000, guid: f86fbab0785fd45e887b1b27c534dc1c, type: 3}
+    prefab: {fileID: 1689388670953432, guid: a685df4af9c7c4b759ca442b232b1a31, type: 2}
+    type: 1
   partPrefab: {fileID: 1838061224783800, guid: f31b43c106cc7407ab41d4a622b8065f, type: 2}
   initialDetachDistance: 0.5
   detachForce: 20

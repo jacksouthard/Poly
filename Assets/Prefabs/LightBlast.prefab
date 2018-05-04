@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 114304483143714602}
   - component: {fileID: 114577557977725486}
   m_Layer: 0
-  m_Name: Blast
+  m_Name: LightBlast
   m_TagString: Projectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

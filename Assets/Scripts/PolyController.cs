@@ -279,7 +279,9 @@ public class PolyController : NetworkBehaviour {
 	public void ResetPlayer () {
 		SetSidesCount (startingSides);
 
-		ResetPlayerLocal ();
+		if (!isClient) {
+			ResetPlayerLocal ();
+		}
 		RpcResetPlayer ();
 	}
 
@@ -287,12 +289,11 @@ public class PolyController : NetworkBehaviour {
 	void RpcResetPlayer () {
 		// local player (sometimes client) has authority over its own movement
 		ResetPlayerLocal();
-
 	}
 
 	void ResetPlayerLocal () {
 		if (master) {
-			transform.position = Vector3.zero;
+			transform.position = MapManager.instance.GetSpawnPoint();
 			GetComponent<Rigidbody2D> ().velocity = Vector2.zero;
 			GetComponent<Rigidbody2D> ().angularVelocity = 0f;
 
