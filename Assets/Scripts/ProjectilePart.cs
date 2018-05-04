@@ -28,9 +28,7 @@ public class ProjectilePart : Part {
 	}
 
 	void Fire () {
-		Vector3 spawnPos = GetProjectileSpawnSpawn ();
-		Quaternion spawnRot = transform.rotation;
-		pc.RelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+		pc.RelayPartFire (int.Parse(transform.parent.name));
 	}
 	
 	void OnTriggerEnter2D (Collider2D coll) {
@@ -47,7 +45,7 @@ public class ProjectilePart : Part {
 		}
 	}
 		
-	Vector3 GetProjectileSpawnSpawn () {
+	public Vector3 GetProjectileSpawnSpawn () {
 		if (projectileSpawns.Length == 1) {
 			return projectileSpawns [0].position;
 		} else {

@@ -541,20 +541,38 @@ public class PolyController : NetworkBehaviour {
 		Destroy (NetworkServer.FindLocalObject (netID));
 	} 
 
-	public void RelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+	public void RelayPartFire (int partIndex) {
 		if (isLocalPlayer) {
-			CmdRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+			CmdRelayPartFire (partIndex);
 		} else if (ai) {
-			AIRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+			ExecutePartFire (partIndex);
 		}
 	}
-
 	[Command]
-	void CmdRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
-		AIRelayProjectileSpawn (projectileIndex, spawnPos, spawnRot);
+	void CmdRelayPartFire (int partIndex) {
+		ExecutePartFire (partIndex);
 	}
-	void AIRelayProjectileSpawn (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot) {
+	void ExecutePartFire (int partIndex) { // happens only on server
+		ProjectilePart projectilePart = sidesGOArray [partIndex].GetComponentInChildren<ProjectilePart> ();
+		int projectileIndex = projectilePart.projectileIndex;
+		Vector3 spawnPos = projectilePart.GetProjectileSpawnSpawn();
+		Quaternion spawnRot = projectilePart.transform.rotation;
 		PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
+
+		if (!isClient) { // if deticated server
+			AnimatePartFire(partIndex);
+		}
+		RpcRelayAnimatePartFire (partIndex);
+	}
+	[ClientRpc]
+	void RpcRelayAnimatePartFire (int partIndex) {
+		AnimatePartFire (partIndex);
+	}
+	void AnimatePartFire (int partIndex) {
+		Animator anim = sidesGOArray [partIndex].GetComponentInChildren<Animator> ();
+		if (anim != null) {
+			anim.SetTrigger ("Fire");
+		}
 	}
 
 	public Color GetPlayerColor () {
