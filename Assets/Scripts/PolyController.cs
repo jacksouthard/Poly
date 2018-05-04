@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Networking;
 
 public class PolyController : NetworkBehaviour {
@@ -555,9 +556,13 @@ public class PolyController : NetworkBehaviour {
 	void ExecutePartFire (int partIndex) { // happens only on server
 		ProjectilePart projectilePart = sidesGOArray [partIndex].GetComponentInChildren<ProjectilePart> ();
 		int projectileIndex = projectilePart.projectileIndex;
-		Vector3 spawnPos = projectilePart.GetProjectileSpawnSpawn();
-		Quaternion spawnRot = projectilePart.transform.rotation;
-		PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
+
+		List<Transform> projectileSpawns = projectilePart.GetProjectileSpawns ();
+		foreach (Transform spawn in projectileSpawns) {
+			Vector3 spawnPos = spawn.position;
+			Quaternion spawnRot = spawn.rotation;
+			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
+		}
 
 		if (!isClient) { // if deticated server
 			AnimatePartFire(partIndex);

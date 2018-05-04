@@ -7,9 +7,10 @@ public class ProjectilePart : Part {
 
 	public int projectileIndex;
 	public float fireRate;
+	public bool multishot;
 	float timeUntilFire = 0f;
 
-	public Transform[] projectileSpawns;
+	public List<Transform> projectileSpawns;
 	int spawnIndex = 0;
 
 	void Update () {
@@ -45,15 +46,21 @@ public class ProjectilePart : Part {
 		}
 	}
 		
-	public Vector3 GetProjectileSpawnSpawn () {
-		if (projectileSpawns.Length == 1) {
-			return projectileSpawns [0].position;
-		} else {
+	public List<Transform> GetProjectileSpawns () {
+		List<Transform> returnedProjectileSpawns = new List<Transform> ();
+		if (projectileSpawns.Count == 1) {
+			returnedProjectileSpawns.Add (projectileSpawns [0]);
+			return returnedProjectileSpawns;
+		} else if (!multishot) {
 			spawnIndex++;
-			if (spawnIndex >= projectileSpawns.Length) {
+			if (spawnIndex >= projectileSpawns.Count) {
 				spawnIndex = 0;
 			}
-			return projectileSpawns [spawnIndex].position;
+			returnedProjectileSpawns.Add (projectileSpawns [spawnIndex]);
+			return returnedProjectileSpawns;
+		} else {
+			// multishot
+			return projectileSpawns;
 		}
 	}
 }
