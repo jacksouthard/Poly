@@ -201,7 +201,7 @@ public class PolyController : NetworkBehaviour {
 		sidesCount = newValue;
 
 		UpdateRendering();
-		if (attractZone != null) {
+		if (attractZone != null && !hasCooldown) {
 			attractZone.radius = radius + 0.75f;
 		}
 
@@ -326,7 +326,7 @@ public class PolyController : NetworkBehaviour {
 
 	// Handle a collectable segment entering collect zone around poly
 	void OnTriggerEnter2D (Collider2D other) {
-		if (other.CompareTag("Collectable") && !hasCooldown && master) {
+		if (other.CompareTag("Collectable") && master) {
 			other.gameObject.GetComponent<SegmentController> ().StartTracking (gameObject.transform, false);
 		}
 	}
@@ -362,10 +362,12 @@ public class PolyController : NetworkBehaviour {
 	void StartCollectionCooldown () {
 		hasCooldown = true;
 		collectionCooldown = collectionCooldownAfterDamage;
+		attractZone.radius = 0f;
 	}
 
 	void EndCollectionCooldown () {
 		hasCooldown = false;
+		attractZone.radius = radius + 0.75f;
 	}
 
 	void UpdateSizeSpeedMultiplier () {
