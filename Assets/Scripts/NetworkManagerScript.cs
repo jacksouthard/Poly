@@ -12,8 +12,13 @@ public class NetworkManagerScript : NetworkManager {
 
 	public int playerCount = 0;
 
-	bool frozen = false;
 	public bool freezeServer;
+
+	public bool resetServer;
+	float resetDelay = 5f;
+	float resetTimer;
+	bool reseting = false;
+
 	public enum RunAs
 	{
 		menu,
@@ -25,6 +30,12 @@ public class NetworkManagerScript : NetworkManager {
 
 	void Awake () {
 		instance = this;
+	}
+
+	void Update () {
+		if (Input.GetKeyDown (KeyCode.V)) {
+			ResetServer ();
+		}
 	}
 
 	void Start () {
@@ -44,8 +55,10 @@ public class NetworkManagerScript : NetworkManager {
 	}
 
 	public override void OnServerSceneChanged (string sceneName) {
-		if (freezeServer && playerCount == 0 && runAs == RunAs.server) {
-			FreezeServer ();
+		if (sceneName == "Game") {
+			if (freezeServer && playerCount == 0 && runAs == RunAs.server) {
+				FreezeServer ();
+			}
 		}
 		base.OnServerSceneChanged (sceneName);
 	}
@@ -55,7 +68,7 @@ public class NetworkManagerScript : NetworkManager {
 		print ("Client Connect");
 		playerCount++;
 
-		if (frozen) {
+		if (Time.timeScale == 0) {
 			ResumeServer ();
 		}
 
@@ -68,19 +81,29 @@ public class NetworkManagerScript : NetworkManager {
 		playerCount--;
 
 		if (playerCount <= 0) {
-			FreezeServer ();
+			if (resetServer) {
+				ResetServer ();
+			}
+			if (freezeServer) {
+				FreezeServer ();
+			}
 		}
 
 		base.OnServerDisconnect (conn);
 	}
 
+	void ResetServer () {
+		print ("Reseting Server");
+		StopServer ();
+	}
+
 	void FreezeServer () {
+		print ("Freezing Server");
 		Time.timeScale = 0f;
-		frozen = true;
 	}
 
 	void ResumeServer () {
+		print ("Resuming Server");
 		Time.timeScale = 1f;
-		frozen = false;
 	}
 }

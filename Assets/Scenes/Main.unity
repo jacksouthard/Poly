@@ -400,6 +400,7 @@ MonoBehaviour:
   playText: {fileID: 1025567755}
   playerCount: 0
   freezeServer: 1
+  resetServer: 1
   runAs: 3
 --- !u!1 &538002887
 GameObject:
