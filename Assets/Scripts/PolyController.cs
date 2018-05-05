@@ -78,10 +78,10 @@ public class PolyController : NetworkBehaviour {
 		if (master) {
 			if (isLocalPlayer) {
 				CmdChangeSidesCount (startingSides);
-				CmdChangePlayerNumber (Random.Range (0, 4));
+				CmdChangePlayerNumber (Random.Range (0, 5));
 			} else if (ai) {
 				ChangeSidesCount (startingSides);
-				ChangePlayerNumber (Random.Range (0, 4));
+				ChangePlayerNumber (Random.Range (0, 5));
 			}
 		} else {
 			SetSidesCount (sidesCount);
