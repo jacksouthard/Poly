@@ -562,15 +562,18 @@ public class PolyController : NetworkBehaviour {
 		ProjectilePart projectilePart = sidesGOArray [partIndex].GetComponentInChildren<ProjectilePart> ();
 		int projectileIndex = projectilePart.projectileIndex;
 
-		Vector3 posDiff = playerPos - transform.position;
-		float rotDiff = playerRotZ - transform.eulerAngles.z;
+//		Vector3 posDiff = playerPos - transform.position;
+//		float rotDiff = playerRotZ - transform.eulerAngles.z;
+
+		transform.position = playerPos;
+		transform.rotation = Quaternion.Euler (new Vector3 (0f, 0f, playerRotZ));
 
 		List<Transform> projectileSpawns = projectilePart.GetProjectileSpawns ();
 		foreach (Transform spawn in projectileSpawns) {
 			Vector3 spawnPos = spawn.position; // positions on server version
-			float spawnRot = spawn.eulerAngles.z;
+			Quaternion spawnRot = spawn.rotation;
 
-			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos + posDiff, Quaternion.Euler(new Vector3(0f, 0f, spawnRot + rotDiff)), playerNumber);
+			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
 		}
 
 		if (!isClient) { // if deticated server
