@@ -201,9 +201,11 @@ public class PolyController : NetworkBehaviour {
 		sidesCount = newValue;
 
 		UpdateRendering();
-		attractZone.radius = radius + 0.75f;
+		if (attractZone != null) {
+			attractZone.radius = radius + 0.75f;
+		}
 
-		if (isLocalPlayer) {
+		if (isLocalPlayer && playerCon != null) {
 			playerCon.UpdatedPolySides (newValue);
 		}
 	}
@@ -545,24 +547,28 @@ public class PolyController : NetworkBehaviour {
 
 	public void RelayPartFire (int partIndex) {
 		if (isLocalPlayer) {
-			CmdRelayPartFire (partIndex);
+			CmdRelayPartFire (partIndex, transform.position, transform.eulerAngles.z);
 		} else if (ai) {
-			ExecutePartFire (partIndex);
+			ExecutePartFire (partIndex, transform.position, transform.eulerAngles.z);
 		}
 	}
 	[Command]
-	void CmdRelayPartFire (int partIndex) {
-		ExecutePartFire (partIndex);
+	void CmdRelayPartFire (int partIndex, Vector3 playerPos, float playerRotZ) {
+		ExecutePartFire (partIndex, playerPos, playerRotZ);
 	}
-	void ExecutePartFire (int partIndex) { // happens only on server
+	void ExecutePartFire (int partIndex, Vector3 playerPos, float playerRotZ) { // happens only on server
 		ProjectilePart projectilePart = sidesGOArray [partIndex].GetComponentInChildren<ProjectilePart> ();
 		int projectileIndex = projectilePart.projectileIndex;
 
+		Vector3 posDiff = playerPos - transform.position;
+		float rotDiff = playerRotZ - transform.eulerAngles.z;
+
 		List<Transform> projectileSpawns = projectilePart.GetProjectileSpawns ();
 		foreach (Transform spawn in projectileSpawns) {
-			Vector3 spawnPos = spawn.position;
-			Quaternion spawnRot = spawn.rotation;
-			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
+			Vector3 spawnPos = spawn.position; // positions on server version
+			float spawnRot = spawn.eulerAngles.z;
+
+			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos + posDiff, Quaternion.Euler(new Vector3(0f, 0f, spawnRot + rotDiff)), playerNumber);
 		}
 
 		if (!isClient) { // if deticated server
