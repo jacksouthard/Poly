@@ -16,7 +16,7 @@ public class PolyController : NetworkBehaviour {
 	const float speed = 20f; // 1000f
 	const float rotationSpeed = 15f; // 300f
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
-	const float minSpeedMultiplier = 0.5f;
+	const float minSpeedMultiplier = 0.6f;
 	public float sizeSpeedMultiplier;
 
 	// sides
@@ -249,7 +249,6 @@ public class PolyController : NetworkBehaviour {
 	public void Move (Vector2 input)
 	{
 		// add force to poly
-		print (Time.deltaTime);
 		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier);
 	}
 

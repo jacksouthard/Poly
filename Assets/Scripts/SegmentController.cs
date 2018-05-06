@@ -36,7 +36,7 @@ public class SegmentController : MonoBehaviour {
 
 	void Update ()
 	{
-		if (attracting && !collected) {
+		if (attracting && !collected && target != null) {
 			gameObject.GetComponent<Rigidbody2D>().AddForce((target.position - gameObject.transform.position) * attractSpeed);
 		}
 	}

@@ -63,12 +63,12 @@ public class PlayerController : NetworkBehaviour {
 			var	rotateInput = Input.GetAxis("Rotation");
 			pc.Rotate (rotateInput);
 
-			if (Input.GetKeyDown ("=")) {
-				pc.CmdChangeSidesCount (pc.sidesCount + sidesCountIncrement);
-			}
-			if (Input.GetKeyDown ("-")) {
-				pc.CmdChangeSidesCount (pc.sidesCount - sidesCountIncrement);
-			}
+//			if (Input.GetKeyDown ("=")) {
+//				pc.CmdChangeSidesCount (pc.sidesCount + sidesCountIncrement);
+//			}
+//			if (Input.GetKeyDown ("-")) {
+//				pc.CmdChangeSidesCount (pc.sidesCount - sidesCountIncrement);
+//			}
 
 			if (Input.GetKeyDown ("0")) { // for testing damage bursts
 				pc.TakeDamage (100f, pc.sidesGOArray [0].transform);
@@ -76,14 +76,6 @@ public class PlayerController : NetworkBehaviour {
 
 			if (Input.GetKeyDown ("9")) { // for testing damage bursts
 				pc.HitInWeakSpot();
-			}
-
-			if (Input.GetKeyDown (KeyCode.Y)) { // for testing time scale
-				Time.timeScale = 0f;
-			}
-
-			if (Input.GetKeyDown (KeyCode.H)) { // for testing time scale
-				Time.timeScale = 1f;
 			}
 		}
 
