@@ -55,7 +55,7 @@ public class PlayerController : NetworkBehaviour {
 		baseZoom = camCon.zoomedInSize;
 	}
 	
-	void Update () {
+	void FixedUpdate () {
 		if (isLocalPlayer && pc.alive) {
 			var moveInput = new Vector2 (Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
 			pc.Move (moveInput);

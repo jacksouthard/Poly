@@ -50,7 +50,7 @@ public class AIController : NetworkBehaviour {
 			UpdateTarget ();
 		}
 	}
-	
+
 	void Update () {
 		if (!master || Time.timeScale == 0) {
 			return;
@@ -65,6 +65,12 @@ public class AIController : NetworkBehaviour {
 			if (timeUntilTargetUpdate <= 0f) {
 				UpdateTarget ();
 			}
+		}
+	}
+	
+	void FixedUpdate () {
+		if (!master || Time.timeScale == 0) {
+			return;
 		}
 
 		if (shouldRotate) {

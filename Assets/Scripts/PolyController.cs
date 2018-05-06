@@ -13,8 +13,8 @@ public class PolyController : NetworkBehaviour {
 	public int attackPartsScore;
 
 	// movement
-	const float speed = 1000f;
-	const float rotationSpeed = 300f;
+	const float speed = 20f; // 1000f
+	const float rotationSpeed = 15f; // 300f
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
 	const float minSpeedMultiplier = 0.5f;
 	public float sizeSpeedMultiplier;
@@ -249,12 +249,13 @@ public class PolyController : NetworkBehaviour {
 	public void Move (Vector2 input)
 	{
 		// add force to poly
-		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier * Time.deltaTime);
+		print (Time.deltaTime);
+		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier);
 	}
 
 	public void Rotate (float input)
 	{
-		rb.AddTorque(input * rotationSpeed * Time.deltaTime);
+		rb.AddTorque(input * rotationSpeed);
 	}
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
