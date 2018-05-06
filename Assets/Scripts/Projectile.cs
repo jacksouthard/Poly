@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class Projectile : NetworkBehaviour {
+	[SyncVar]
+	public NetworkInstanceId playerNetID;
+
 	public bool live = true;
 	public float speed;
 	public float lifeTime;

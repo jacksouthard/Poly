@@ -28,6 +28,10 @@ public class SideController : MonoBehaviour {
 			// case where daming object is projectile
 			if (coll.tag == "Projectile") {
 				Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
+				if (projectile.playerNetID == pc.netId) {
+					return;
+				}
+
 				if (!projectile.live) {
 					return; // projectile is either nonexistant or already has hit something
 				} else {

@@ -13,8 +13,8 @@ public class PolyController : NetworkBehaviour {
 	public int attackPartsScore;
 
 	// movement
-	const float speed = 15f;
-	const float rotationSpeed = 10f;
+	const float speed = 1000f;
+	const float rotationSpeed = 300f;
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
 	const float minSpeedMultiplier = 0.5f;
 	public float sizeSpeedMultiplier;
@@ -249,12 +249,12 @@ public class PolyController : NetworkBehaviour {
 	public void Move (Vector2 input)
 	{
 		// add force to poly
-		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier);
+		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier * Time.deltaTime);
 	}
 
 	public void Rotate (float input)
 	{
-		rb.AddTorque(input * rotationSpeed);
+		rb.AddTorque(input * rotationSpeed * Time.deltaTime);
 	}
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ public class PolyController : NetworkBehaviour {
 			Vector3 spawnPos = spawn.position; // positions on server version
 			Quaternion spawnRot = spawn.rotation;
 
-			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber);
+			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber, netId);
 		}
 
 		if (!isClient) { // if deticated server
