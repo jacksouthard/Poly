@@ -30,6 +30,7 @@ public class NetworkManagerScript : NetworkManager {
 
 	void Awake () {
 		instance = this;
+		useWebSockets = true;
 	}
 
 	void Update () {
