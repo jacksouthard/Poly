@@ -118,6 +118,7 @@ MonoBehaviour:
   sidesGOArray: []
   sidePrefab: {fileID: 129896, guid: 30371722f34f44e43acbc75b86fe2535, type: 2}
   sidesContainer: {fileID: 150636}
+  renderDistance: 15
   fillMaterial: {fileID: 2100000, guid: af12220155e484ce4954ba8f21882e98, type: 2}
   alive: 1
   sidesCount: 0

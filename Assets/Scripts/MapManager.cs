@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 public class MapManager : NetworkBehaviour {
 	public static MapManager instance;
 
+	public Transform playerTransform; 
+
 	Transform bordersContainer;
 	Transform[] borders = new Transform[4];
 	public int mapSize;

@@ -69,7 +69,7 @@ public class AIController : NetworkBehaviour {
 	}
 	
 	void FixedUpdate () {
-		if (!master || Time.timeScale == 0 && target != null) {
+		if (!master || Time.timeScale == 0 || (target == null && state != AIState.wandering)) {
 			return;
 		}
 

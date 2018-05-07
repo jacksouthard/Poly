@@ -37,6 +37,7 @@ public class PlayerController : NetworkBehaviour {
 	// CAMERA ---------------------------------------------------------------------------------------------
 
 	public override void OnStartLocalPlayer() {
+		MapManager.instance.playerTransform = transform;
 		CameraSetup();	
 	}
 

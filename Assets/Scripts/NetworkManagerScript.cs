@@ -30,13 +30,7 @@ public class NetworkManagerScript : NetworkManager {
 
 	void Awake () {
 		instance = this;
-		useWebSockets = true;
-	}
-
-	void Update () {
-		if (Input.GetKeyDown (KeyCode.V)) {
-			ResetServer ();
-		}
+//		useWebSockets = true;
 	}
 
 	void Start () {

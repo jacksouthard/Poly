@@ -38,6 +38,8 @@ public class PolyController : NetworkBehaviour {
 	PolygonCollider2D weakZoneCollider;
 
 	// visuals
+	bool rendered = true;
+	float renderDistance = 20f;
 	public Material fillMaterial;
 
 	// collection
@@ -200,7 +202,10 @@ public class PolyController : NetworkBehaviour {
 		}
 		sidesCount = newValue;
 
-		UpdateRendering();
+		if (master || rendered) {
+			UpdateRendering ();
+		}
+
 		if (attractZone != null && !hasCooldown) {
 			attractZone.radius = radius + 0.75f;
 		}
@@ -230,7 +235,7 @@ public class PolyController : NetworkBehaviour {
 		
 
 
-	// INPUT ------------------------------------------------------------------------------------------------------------
+	// UPDATE CHECKS ------------------------------------------------------------------------------------------------------------
 	void Update ()
 	{
 		if (master) {
@@ -241,7 +246,21 @@ public class PolyController : NetworkBehaviour {
 					EndCollectionCooldown ();
 				}
 			}
+		} else {
+			// if random other poly in players game
+			float dstToPlayer = DistanceToPlayer();
+			if (!rendered && dstToPlayer < renderDistance) { // just came into render distance
+				UpdateRendering();
+				rendered = true;
+			} else if (rendered && dstToPlayer > renderDistance) { // just left render distance
+				rendered = false;
+			}
 		}
+	}
+
+	float DistanceToPlayer () {
+		Vector3 playerPos = MapManager.instance.playerTransform.position;
+		return (playerPos - transform.position).magnitude;
 	}
 
 	// MOVEMENT AND ROTATION ------------------------------------------------------------------------------------
@@ -632,6 +651,7 @@ public class PolyController : NetworkBehaviour {
 	// Update mesh and polygon collider, and sides geometry
 	void UpdateRendering ()
 	{
+//		print ("Updating Rendering for " + gameObject.name);
 		UpdateSizeSpeedMultiplier ();
 
 		float[] angles = CalculateAngles (sidesCount);
@@ -748,6 +768,12 @@ public class PolyController : NetworkBehaviour {
 				var y = Mathf.Sin(angle * Mathf.Deg2Rad) * distance;
 				sideGO.transform.localPosition = new Vector3 (x, y, 0);
 				sideGO.transform.localRotation = Quaternion.Euler (0, 0, angle-90);
+
+				// update colliders
+				PolygonCollider2D coll = sideGO.GetComponent<PolygonCollider2D> ();
+				Vector2[] curPath = coll.GetPath (0);
+				curPath [2] = new Vector2 (0f, -distance);
+				coll.SetPath (0, curPath);
 			} else {
 				if (sideGO.activeInHierarchy) {
 					// make inactive, but first check if it has an attached part

@@ -187,7 +187,7 @@ MonoBehaviour:
   detaching: 0
   maxHealth: 100
   projectileIndex: 2
-  fireRate: 4
+  fireRate: 2.5
   multishot: 0
   projectileSpawns:
   - {fileID: 4432598886131496}
