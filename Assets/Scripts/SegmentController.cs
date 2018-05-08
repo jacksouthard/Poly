@@ -20,6 +20,7 @@ public class SegmentController : MonoBehaviour {
 		fake = _fake;
 
 		target = other;
+		gameObject.layer = 12;
 		GetComponent<BoxCollider2D> ().isTrigger = true;
 	}
 

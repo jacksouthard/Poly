@@ -76,9 +76,10 @@ public class PolyController : NetworkBehaviour {
 		// set up references
 		segmentValue = SegmentsManager.instance.segmentValue;
 		rb = GetComponent<Rigidbody2D>();
-		attractZone = GetComponent<CircleCollider2D> ();
 
 		if (master) {
+			attractZone = GetComponent<CircleCollider2D> ();
+
 			if (isLocalPlayer) {
 				CmdChangeSidesCount (startingSides);
 				CmdChangePlayerNumber (Random.Range (0, 5));
@@ -216,7 +217,7 @@ public class PolyController : NetworkBehaviour {
 			UpdateRendering ();
 		}
 
-		if (attractZone != null && !hasCooldown) {
+		if (master && attractZone != null && !hasCooldown) {
 			attractZone.radius = radius + 0.75f;
 		}
 
