@@ -15,13 +15,16 @@ public class Projectile : NetworkBehaviour {
 
 	public void Hit () {
 		live = false;
-		GetComponentInChildren<SpriteRenderer> ().enabled = false;
 
-		// spawn explosion
-		GameObject prefab = Resources.Load ("Explosion") as GameObject;
-		Vector3 spawnPos = new Vector3 (transform.position.x, transform.position.y, -1f);
-		GameObject explosion = Instantiate (prefab, spawnPos, Quaternion.identity);
-		explosion.GetComponent<Explosion> ().Init (GetComponent<Damaging> ().damage, playerColor);
+		if (isClient) {
+			GetComponentInChildren<SpriteRenderer> ().enabled = false;
+
+			// spawn explosion
+			GameObject prefab = Resources.Load ("Explosion") as GameObject;
+			Vector3 spawnPos = new Vector3 (transform.position.x, transform.position.y, -1f);
+			GameObject explosion = Instantiate (prefab, spawnPos, Quaternion.identity);
+			explosion.GetComponent<Explosion> ().Init (GetComponent<Damaging> ().damage, playerColor);
+		}
 	}
 
 	void OnTriggerEnter2D (Collider2D coll) { // projectile must check for hit on random objects like floating parts

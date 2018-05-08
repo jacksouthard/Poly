@@ -82,10 +82,10 @@ public class PolyController : NetworkBehaviour {
 
 			if (isLocalPlayer) {
 				CmdChangeSidesCount (startingSides);
-				CmdChangePlayerNumber (Random.Range (0, 5));
+				CmdChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			} else if (ai) {
 				ChangeSidesCount (startingSides);
-				ChangePlayerNumber (Random.Range (0, 5));
+				ChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			}
 		} else {
 			SetSidesCount (sidesCount);
@@ -180,9 +180,9 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	void CmdSpawnDeathExplosion () {
 		RpcSpawnDeathExplosion ();
-		if (!isClient) {
-			SpawnDeathExplosion ();
-		}
+//		if (!isClient) {
+//			SpawnDeathExplosion ();
+//		}
 	}
 
 	[ClientRpc]
@@ -605,9 +605,9 @@ public class PolyController : NetworkBehaviour {
 			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber, netId);
 		}
 
-		if (!isClient) { // if deticated server
-			AnimatePartFire(partIndex);
-		}
+//		if (!isClient) { // if deticated server
+//			AnimatePartFire(partIndex);
+//		}
 		RpcRelayAnimatePartFire (partIndex);
 	}
 	[ClientRpc]
