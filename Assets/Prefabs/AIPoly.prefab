@@ -268,9 +268,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visionRange: 8
   rangedHoldDst: 4
-  wanderTime: 2
-  combatUpdateTime: 1
-  maxTimeBeforeUpdate: 5
+  wanderTime: 1.5
+  combatUpdateTime: 0.5
+  maxTimeBeforeUpdate: 3
   meleeScore: 0
   rangedScore: 0
   state: 0

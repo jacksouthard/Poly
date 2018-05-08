@@ -10,6 +10,10 @@ public class AIController : NetworkBehaviour {
 	bool shouldRotate = false;
 	bool sidesFull = false;
 
+	// intelegence
+	float maxResponceDelay = 1f;
+	float responceDelay;
+
 	public float visionRange;
 	public float rangedHoldDst;
 	public float wanderTime;
@@ -44,6 +48,7 @@ public class AIController : NetworkBehaviour {
 	void Start () {
 		if (pc.isServer) {
 			master = true;
+			responceDelay = Random.Range (0f, maxResponceDelay);
 			for (int i = 0; i < partTypes.Length; i++) {
 				partTypes [i] = PartData.PartType.none;
 			}
@@ -106,13 +111,13 @@ public class AIController : NetworkBehaviour {
 
 	void EnterWander () {
 		shouldRotate = false;
-		timeUntilTargetUpdate = wanderTime;
+		timeUntilTargetUpdate = wanderTime + responceDelay;
 		state = AIState.wandering;
 		dirToTarget = Random.insideUnitCircle.normalized;
 	}
 
 	void EnterCollect (bool part = false) {
-		timeUntilTargetUpdate = maxTimeBeforeUpdate;
+		timeUntilTargetUpdate = maxTimeBeforeUpdate + responceDelay;
 		state = AIState.collecting;
 		UpdateDirToTarget ();
 
@@ -126,7 +131,7 @@ public class AIController : NetworkBehaviour {
 
 	void EnterAttack (float dstToTarget) {
 		shouldRotate = true;
-		timeUntilTargetUpdate = combatUpdateTime;
+		timeUntilTargetUpdate = combatUpdateTime + responceDelay;
 		state = AIState.attacking;
 		if (ranged) {
 			if (dstToTarget > rangedHoldDst) {
@@ -148,7 +153,7 @@ public class AIController : NetworkBehaviour {
 
 	void EnterFlee () {
 		shouldRotate = true;
-		timeUntilTargetUpdate = combatUpdateTime;
+		timeUntilTargetUpdate = combatUpdateTime + responceDelay;
 		state = AIState.fleeing;
 		UpdateDirToTarget (flip: true);
 

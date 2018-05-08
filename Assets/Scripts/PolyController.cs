@@ -16,7 +16,7 @@ public class PolyController : NetworkBehaviour {
 	const float speed = 20f; // 1000f
 	const float rotationSpeed = 15f; // 300f
 	public float speedBoost = 1f; // speed modifier from active boosters. Normally 1
-	const float minSpeedMultiplier = 0.6f;
+	const float minSpeedMultiplier = 0.8f;
 	public float sizeSpeedMultiplier;
 
 	// sides
@@ -402,7 +402,7 @@ public class PolyController : NetworkBehaviour {
 	void UpdateSizeSpeedMultiplier () {
 		float sizeRange = sidesCountMax - sidesCountMin;
 		float sizeRatio = (sidesCount - sidesCountMin) / sizeRange;
-		sizeSpeedMultiplier = minSpeedMultiplier * (2 - sizeRatio);
+		sizeSpeedMultiplier = Mathf.Lerp(1f, minSpeedMultiplier, sizeRatio);
 	}
 		
 	// PARTS --------------------------------------------------------------------------------------------------------------------------------
