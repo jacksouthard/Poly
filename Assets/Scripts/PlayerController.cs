@@ -4,12 +4,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour {
-	// controls
-	GameObject leftTouchArea;
-	GameObject rightTouchArea;
-	bool useTouch = true;
-	bool useKeyboard = true;
-
 	// ui
 	Animator deathAnimator; 
 
@@ -20,8 +14,6 @@ public class PlayerController : NetworkBehaviour {
 	float baseZoom;
 	float zoomPerSide = 0.5f;
 	float zoomTime = 3f;
-
-	float sidesCountIncrement = 0.5f;
 
 	PolyController pc;
 
@@ -50,9 +42,6 @@ public class PlayerController : NetworkBehaviour {
 		camCon = playerCamera.GetComponent<CameraController> ();
 		camCon.target = this.gameObject.transform;
 
-		leftTouchArea = playerCamera.transform.Find("LeftTouchArea").gameObject;
-		rightTouchArea = playerCamera.transform.Find("RightTouchArea").gameObject;
-
 		baseZoom = camCon.zoomedInSize;
 	}
 	
@@ -63,28 +52,29 @@ public class PlayerController : NetworkBehaviour {
 
 			var	rotateInput = Input.GetAxis("Rotation");
 			pc.Rotate (rotateInput);
+		}
+	}
 
-//			if (Input.GetKeyDown ("=")) {
-//				pc.CmdChangeSidesCount (pc.sidesCount + sidesCountIncrement);
-//			}
-//			if (Input.GetKeyDown ("-")) {
-//				pc.CmdChangeSidesCount (pc.sidesCount - sidesCountIncrement);
-//			}
-
-			if (Input.GetKeyDown ("0")) { // for testing damage bursts
-				pc.TakeDamage (100f, pc.sidesGOArray [0].transform);
-			}
-
-			if (Input.GetKeyDown ("9")) { // for testing damage bursts
-				pc.HitInWeakSpot();
-			}
+	void Update () {
+		if (!isLocalPlayer) {
+			return;
 		}
 
-		if (!pc.alive && isLocalPlayer && Input.GetKeyDown(KeyCode.R)) {
+		if (!pc.alive && Input.GetKeyDown(KeyCode.R)) {
 			// respawn if dead
 			deathAnimator.SetTrigger ("Exit");
 			playerCamera.GetComponent<CameraController> ().ZoomIn ();
 			pc.CmdResetPlayer();
+		}
+
+		if (pc.alive) {
+			if (Input.GetKeyDown ("0")) { // for testing damage bursts
+				pc.TakeDamage (100f, pc.sidesGOArray [0].transform);
+			}
+
+			if (Input.GetKeyDown ("9")) { // for testing instant death
+				pc.HitInWeakSpot ();
+			}
 		}
 	}
 

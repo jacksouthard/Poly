@@ -43,7 +43,7 @@ public class PolyController : NetworkBehaviour {
 	public Material fillMaterial;
 
 	// collection
-	float segmentValue = 0.2f;
+	float segmentValue;
 	float collectionCooldownAfterDamage = 2f;
 	float collectionCooldown;
 	bool hasCooldown = false;
@@ -74,6 +74,7 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		// set up references
+		segmentValue = SegmentsManager.instance.segmentValue;
 		rb = GetComponent<Rigidbody2D>();
 		attractZone = GetComponent<CircleCollider2D> ();
 
@@ -139,7 +140,7 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		StartCollectionCooldown ();
-		int segmentsCount = Mathf.CeilToInt((damageInSides / segmentValue) / 2f); // the value of segments
+		int segmentsCount = GetEjectedSegmentCount(damageInSides);
 		if (ai) {
 			RelayBurstSpawn (segmentsCount, new Vector2 (side.position.x, side.position.y), side.rotation.eulerAngles.z);
 		} else if (isLocalPlayer) {
@@ -152,8 +153,17 @@ public class PolyController : NetworkBehaviour {
 		}
  	}
 
+	int GetEjectedSegmentCount (float damageInSides) { // 100 dmg is 1 side
+		float ejectedMass = damageInSides / 2f;
+		int ejectedSegments = Mathf.RoundToInt (ejectedMass / segmentValue);
+
+		SegmentsManager.instance.MassDestroyed (damageInSides - ejectedMass);	
+
+		return ejectedSegments;
+	}
+
 	public void HitInWeakSpot () {
-		int segmentsCount = Mathf.CeilToInt((sidesCount / segmentValue) / 2f); // the value of segments
+		int segmentsCount = GetEjectedSegmentCount (sidesCount - sidesCountMin);
 		 
 		if (ai) {
 			RpcSpawnDeathExplosion ();
@@ -345,7 +355,7 @@ public class PolyController : NetworkBehaviour {
 
 	// Handle a collectable segment entering collect zone around poly
 	void OnTriggerEnter2D (Collider2D other) {
-		if (other.CompareTag("Collectable") && master) {
+		if (other.CompareTag("Collectable") && master && sidesCount < sidesCountMax) {
 			other.gameObject.GetComponent<SegmentController> ().StartTracking (gameObject.transform, false);
 		}
 	}
@@ -363,7 +373,6 @@ public class PolyController : NetworkBehaviour {
 	}
 	public void SegmentStartDestory (GameObject segment) {
 		Destroy (segment);
-		SegmentsManager.instance.SegmentDestoryed ();
 		Collect(segmentValue);
 	}
 

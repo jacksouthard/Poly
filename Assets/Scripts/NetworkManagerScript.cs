@@ -15,9 +15,6 @@ public class NetworkManagerScript : NetworkManager {
 	public bool freezeServer;
 
 	public bool resetServer;
-	float resetDelay = 5f;
-	float resetTimer;
-	bool reseting = false;
 
 	public enum RunAs
 	{

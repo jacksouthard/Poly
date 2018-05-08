@@ -13,10 +13,12 @@ public class SegmentsManager : NetworkBehaviour {
 	float burstSpread = 15f;
 	float burstSpawnDst = 0.2f;
 
-	private float spawnTimer;
-	private float spawnInterval = 0.01f;
-	private int segmentCount = 0;
-	private int segmentCountMax = 200;
+	public float segmentValue;
+	public float netMass = 0f;
+	public float maxMass;
+
+	float spawnTimer;
+	float spawnInterval = 0.01f;
 
 	void Awake () {
 		instance = this;
@@ -38,12 +40,11 @@ public class SegmentsManager : NetworkBehaviour {
 		}
 	}
 	void SpawnSegment () {
-		if (segmentCount < segmentCountMax) {
+		if (netMass < maxMass) {
 			Vector3 spawnPos = new Vector3 (Random.Range (-spawnRadius, spawnRadius), Random.Range (-spawnRadius, spawnRadius), 1f);
 			Quaternion spawnRot = Quaternion.Euler (new Vector3 (0f, 0f, Random.Range (0f, 180f)));
 			GameObject segment = Instantiate (segmentPrefab, spawnPos, spawnRot) as GameObject;
-			segmentCount++;
-
+			netMass += segmentValue;
 			NetworkServer.Spawn (segment);
 		}
 	}
@@ -56,9 +57,8 @@ public class SegmentsManager : NetworkBehaviour {
 		}
 	}
 
-	public void SegmentDestoryed ()
-	{
-		segmentCount--;
+	public void MassDestroyed (float destroyedMass) {
+		netMass -= destroyedMass;
 	}
 
 	IEnumerator SpawnBurst(int count, Vector2 spawnPos, float spawnZ, bool randomDirections) {
@@ -77,7 +77,6 @@ public class SegmentsManager : NetworkBehaviour {
 			segment.GetComponent<Rigidbody2D> ().velocity = spawnRot * (Vector2.up * burstSpawnSpeed);
 
 			NetworkServer.Spawn (segment);
-			segmentCount++;
 
 			yield return new WaitForSeconds (burstSpawnFrequency);
 		}
