@@ -15,9 +15,13 @@ public class Projectile : NetworkBehaviour {
 
 	public void Hit () {
 		live = false;
+		SpriteRenderer[] srs = GetComponentsInChildren<SpriteRenderer> ();
 
 		if (isClient) {
-			GetComponentInChildren<SpriteRenderer> ().enabled = false;
+			// hide projectile
+			foreach (var sr in srs) {
+				sr.enabled = false;
+			}
 
 			// spawn explosion
 			GameObject prefab = Resources.Load ("Explosion") as GameObject;

@@ -127,8 +127,8 @@ PolygonCollider2D:
   m_Points:
     m_Paths:
     - - {x: 1, y: 0.3}
-      - {x: 3, y: 7}
-      - {x: -3, y: 7}
+      - {x: 2, y: 8}
+      - {x: -2, y: 8}
       - {x: -1, y: 0.3}
 --- !u!61 &61950283099452160
 BoxCollider2D:

@@ -43,7 +43,7 @@ public class PolyController : NetworkBehaviour {
 
 	// collection
 	float segmentValue;
-	float collectionCooldownAfterDamage = 2f;
+	float collectionCooldownAfterDamage = 7f;
 	float collectionCooldown;
 	bool hasCooldown = false;
 
