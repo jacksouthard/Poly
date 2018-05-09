@@ -77,6 +77,7 @@ public class PlayerController : NetworkBehaviour {
 
 	public void PolyDied () {
 		playerCamera.GetComponent<CameraController> ().ZoomOut ();
+		deathAnimator.SetTrigger ("Enter");
 	}
 
 	public void UpdatedPolySides (float newSides) {
