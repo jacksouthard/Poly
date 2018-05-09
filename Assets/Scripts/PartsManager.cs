@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Networking;
 
 public class PartsManager : NetworkBehaviour {
@@ -54,10 +55,38 @@ public class PartsManager : NetworkBehaviour {
 			Vector3 spawnPos = new Vector3 (Random.Range (-spawnRadius, spawnRadius), Random.Range (-spawnRadius, spawnRadius), 1f);
 			Quaternion spawnRot = Quaternion.Euler (new Vector3 (0f, 0f, Random.Range (0f, 180f)));
 			GameObject part = Instantiate (partPrefab, spawnPos, spawnRot) as GameObject;
-			part.GetComponent<PartController> ().Init(Random.Range(0, partsData.Length));
+			part.GetComponent<PartController> ().Init(GetBalancedPartSpawnID());
 			partCount++;
 
 			NetworkServer.Spawn (part);
+		}
+	}
+
+	int GetBalancedPartSpawnID () {
+		// get random part type
+		PartData.PartType partType;
+		int random = Random.Range (0, 100);
+		if (random < 30) {
+			partType = PartData.PartType.melee;
+		} else if (random < 60) {
+			partType = PartData.PartType.ranged;
+		} else {
+			partType = PartData.PartType.booster;
+		}
+
+		// get random part of type
+		List<int> partIndexesOfType = new List<int>();
+		for (int i = 0; i < partsData.Length; i++) {
+			if (partsData[i].type == partType) {
+				partIndexesOfType.Add (i);
+			}
+		}
+
+		if (partIndexesOfType.Count != 0) {
+			return partIndexesOfType [Random.Range (0, partIndexesOfType.Count)];
+		} else {
+			print ("Could not find part of type: " + partType);
+			return 0;
 		}
 	}
 

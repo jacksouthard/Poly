@@ -16,12 +16,6 @@ public class PartController : NetworkBehaviour {
 		}
 	}
 
-	void Update () {
-		if (Input.GetKeyDown (KeyCode.O)) {
-			UpdateData (id);
-		}
-	}
-
 	public void Init (int partID) {
 		id = partID;
 		UpdateData (id);

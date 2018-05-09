@@ -106,14 +106,12 @@ public class PolyController : NetworkBehaviour {
 		ChangeSidesCount (newValue);
 	}
 	public void ChangeSidesCount (float newValue) {
-		if (newValue < sidesCountMin) {
-			if (alive) {
-				DetachAllParts ();
+		if (newValue < sidesCountMin && alive) {
+			DetachAllParts ();
 
-				if (ai) { // b/c AI dont respawn
-					MapManager.instance.AIDie();
-					Destroy (gameObject, 2f);
-				}
+			if (ai) { // b/c AI dont respawn
+				MapManager.instance.AIDie();
+				Destroy (gameObject, 2f);
 			}
 
 			partData = "------------------------";
