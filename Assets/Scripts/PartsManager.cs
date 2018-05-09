@@ -22,7 +22,7 @@ public class PartsManager : NetworkBehaviour {
 	};
 
 	[Header("Spawning")]
-	public float spawnRadius;
+	float spawnRadius;
 	private float spawnTimer;
 	private float spawnInterval = 0.5f; 
 	private int partCount = 0;
@@ -34,6 +34,7 @@ public class PartsManager : NetworkBehaviour {
 
 	void Start () {
 		spawnTimer = spawnInterval;
+		spawnRadius = MapManager.instance.spawnRange;
 	}
 	
 	void Update ()

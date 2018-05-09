@@ -21,7 +21,6 @@ public class PolyController : NetworkBehaviour {
 
 	// sides
 	const float damageToSidesRatio = 0.01f;
-	const float startingSides = 2.4f;
 	const float sidesCountMin = 2.2f;
 	const int sidesCountMax = 12;
 
@@ -81,10 +80,10 @@ public class PolyController : NetworkBehaviour {
 			attractZone = GetComponent<CircleCollider2D> ();
 
 			if (isLocalPlayer) {
-				CmdChangeSidesCount (startingSides);
+				CmdChangeSidesCount (sidesCountMin);
 				CmdChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			} else if (ai) {
-				ChangeSidesCount (startingSides);
+				ChangeSidesCount (sidesCountMin);
 				ChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			}
 		} else {
@@ -108,12 +107,15 @@ public class PolyController : NetworkBehaviour {
 	}
 	public void ChangeSidesCount (float newValue) {
 		if (newValue < sidesCountMin) {
-			DetachAllParts ();
+			if (alive) {
+				DetachAllParts ();
 
-			if (ai) { // b/c AI dont respawn
-				MapManager.instance.AIDie();
-				Destroy (gameObject, 2f);
+				if (ai) { // b/c AI dont respawn
+					MapManager.instance.AIDie();
+					Destroy (gameObject, 2f);
+				}
 			}
+
 			partData = "------------------------";
 			if (!isClient) {
 				ExpressPartData (partData); // only needs to happen on server, not host
@@ -257,7 +259,7 @@ public class PolyController : NetworkBehaviour {
 					EndCollectionCooldown ();
 				}
 			}
-		} else {
+		} else if (!isServer) {
 			// if random other poly in players game
 			float dstToPlayer = DistanceToPlayer();
 			if (!rendered && dstToPlayer < renderDistance) { // just came into render distance
@@ -309,7 +311,7 @@ public class PolyController : NetworkBehaviour {
 		ResetPlayer ();
 	}
 	public void ResetPlayer () {
-		SetSidesCount (startingSides);
+		SetSidesCount (sidesCountMin);
 
 		if (!isClient) {
 			ResetPlayerLocal ();
@@ -348,7 +350,9 @@ public class PolyController : NetworkBehaviour {
 			side.GetComponent<SpriteRenderer> ().enabled = active;
 		}
 		transform.Find ("WeakSpot").GetComponent<Collider2D> ().enabled = active;
-		attractZone.enabled = active;
+		if (master) {
+			attractZone.enabled = active;
+		}
 		mr.enabled = active;
 	}
 
@@ -403,6 +407,10 @@ public class PolyController : NetworkBehaviour {
 		float sizeRange = sidesCountMax - sidesCountMin;
 		float sizeRatio = (sidesCount - sidesCountMin) / sizeRange;
 		sizeSpeedMultiplier = Mathf.Lerp(1f, minSpeedMultiplier, sizeRatio);
+	}
+
+	public float GetNetMass () {
+		return sidesCount - sidesCountMin;
 	}
 		
 	// PARTS --------------------------------------------------------------------------------------------------------------------------------

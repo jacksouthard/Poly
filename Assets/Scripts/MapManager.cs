@@ -11,7 +11,8 @@ public class MapManager : NetworkBehaviour {
 	Transform bordersContainer;
 	Transform[] borders = new Transform[4];
 	public int mapSize;
-	float spawnRange;
+	public float spawnRange;
+	float spawnCheckRange = 4f; // distance away from others polys a poly tries to spawn
 
 	[Header("AI")]
 	public int targetPolyCount;
@@ -22,13 +23,13 @@ public class MapManager : NetworkBehaviour {
 
 	void Awake () {
 		instance = this;
+		spawnRange = (mapSize / 2f) - 5f; 
 	}
 
 	void Start () {
 		SetupBorders ();
 
 		if (isServer) {
-			spawnRange = (mapSize / 2f) - 5f;
 			Populate ();
 		}
 	}
@@ -55,8 +56,29 @@ public class MapManager : NetworkBehaviour {
 	}
 
 	public Vector3 GetSpawnPoint () {
-		return new Vector3 (Random.Range (-spawnRange, spawnRange), Random.Range (-spawnRange, spawnRange), 0f);
+		int attemps = 0;
+		Vector2 possibleSpawn = new Vector2 (Random.Range (-spawnRange, spawnRange), Random.Range (-spawnRange, spawnRange));
+		while (!SpawnPosAvailable (possibleSpawn)) {
+			possibleSpawn = new Vector2 (Random.Range (-spawnRange, spawnRange), Random.Range (-spawnRange, spawnRange));
 
+			attemps++;
+			if (attemps > 5f) {
+				return new Vector3 (possibleSpawn.x, possibleSpawn.y, 0f);
+			}
+		}
+
+		return new Vector3 (possibleSpawn.x, possibleSpawn.y, 0f);
+	}
+
+	bool SpawnPosAvailable (Vector2 spawn) {
+		Collider2D[] collsInRange = Physics2D.OverlapCircleAll (spawn, spawnCheckRange);
+		foreach (var coll in collsInRange) {
+			if (coll.transform.root.tag == "Player") {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	void SetupBorders () {

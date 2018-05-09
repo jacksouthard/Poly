@@ -337,7 +337,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2624ef07920d842ebb272c7d1fe2d8d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerTransform: {fileID: 0}
   mapSize: 100
+  spawnRange: 0
   targetPolyCount: 15
   aiPrefab: {fileID: 1946908595206848, guid: 302626992a2ad4d32927e6f9a5286fbe, type: 2}
   aiCount: 0

@@ -23,22 +23,19 @@ public class PlayerController : NetworkBehaviour {
 
 	void Start () {
 		deathAnimator = GameObject.Find ("Canvas").transform.Find ("GameOver").GetComponent<Animator> ();
+		if (isLocalPlayer) {
+			MapManager.instance.playerTransform = transform;
+			CameraSetup();	
+		}
 
 	}
 
 	// CAMERA ---------------------------------------------------------------------------------------------
 
-	public override void OnStartLocalPlayer() {
-		MapManager.instance.playerTransform = transform;
-		CameraSetup();	
-	}
-
 	void CameraSetup () {			
 		// sets up game camera for individual player
 		GameObject playerCameraPrefab = Resources.Load("PlayerCamera") as GameObject;
-		Instantiate(playerCameraPrefab, new Vector3 (0,0, -10), Quaternion.Euler(0,0,0));
-
-		playerCamera = GameObject.Find("PlayerCamera(Clone)");
+		playerCamera = Instantiate(playerCameraPrefab, new Vector3 (0,0, -10), Quaternion.Euler(0,0,0));
 		camCon = playerCamera.GetComponent<CameraController> ();
 		camCon.target = this.gameObject.transform;
 
@@ -83,11 +80,13 @@ public class PlayerController : NetworkBehaviour {
 	}
 
 	public void UpdatedPolySides (float newSides) {
-		int newZoomInt = Mathf.FloorToInt (newSides);
-		if (newZoomInt != lastZoom) {
-			float newZoom = (newSides * zoomPerSide) + baseZoom;
-			camCon.SetZoom (newZoom, zoomTime);
-			lastZoom = newZoomInt;
+		if (camCon != null) {
+			int newZoomInt = Mathf.FloorToInt (newSides);
+			if (newZoomInt != lastZoom) {
+				float newZoom = (newSides * zoomPerSide) + baseZoom;
+				camCon.SetZoom (newZoom, zoomTime);
+				lastZoom = newZoomInt;
+			}
 		}
 	}
 }

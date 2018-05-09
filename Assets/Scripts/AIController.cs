@@ -226,20 +226,21 @@ public class AIController : NetworkBehaviour {
 	
 		foreach (var coll in collsInRange) {
 			if (coll.gameObject != gameObject) { // dont detect itself
-				float dstToColl = (transform.position - coll.transform.position).magnitude;
-			
-				if (coll.tag == "Collectable") {
-					if (dstToColl < closestDstToSegment) {
-						closestCollectable = coll.transform;
-						closestDstToSegment = dstToColl;
+				if (coll.transform.root != transform) {
+					float dstToColl = (transform.position - coll.transform.position).magnitude;
+					if (coll.tag == "Collectable") {
+						if (dstToColl < closestDstToSegment) {
+							closestCollectable = coll.transform;
+							closestDstToSegment = dstToColl;
+						}
+					} else if (coll.tag == "Attachable") {
+						if (dstToColl < closestDstToPart) {
+							closestAttachable = coll.transform;
+							closestDstToPart = dstToColl;
+						}
+					} else if (coll.tag == "Player") {
+						return new ObjectOfInterest (ObjectOfInterest.Type.player, coll.transform, dstToColl);
 					}
-				} else if (coll.tag == "Attachable") {
-					if (dstToColl < closestDstToPart) {
-						closestAttachable = coll.transform;
-						closestDstToPart = dstToColl;
-					}
-				} else if (coll.tag == "Player") {
-					return new ObjectOfInterest (ObjectOfInterest.Type.player, coll.transform, dstToColl);
 				}
 			}
 		}

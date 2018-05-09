@@ -6,7 +6,8 @@ public class SegmentsManager : NetworkBehaviour {
 	public static SegmentsManager instance;
 
 	public GameObject segmentPrefab;
-	public float spawnRadius;
+	float spawnMargin = 2f;
+	float spawnRadius;
 
 	float burstSpawnFrequency = 0.05f;
 	float burstSpawnSpeed = 3f;
@@ -17,6 +18,10 @@ public class SegmentsManager : NetworkBehaviour {
 	public float netMass = 0f;
 	public float maxMass;
 
+	// net mass checking
+	float netMassCheckFrequency = 60f;
+	float massCheckTimer;
+
 	float spawnTimer;
 	float spawnInterval = 0.01f;
 
@@ -26,16 +31,24 @@ public class SegmentsManager : NetworkBehaviour {
 
 	void Start () {
 		spawnTimer = spawnInterval;
+		massCheckTimer = netMassCheckFrequency;
+		spawnRadius = MapManager.instance.spawnRange;
 	}
 	
 	void Update ()
 	{
-		if (isServer) {
+		if (isServer && Time.timeScale != 0) {
 			if (spawnTimer <= 0f) {
 				spawnTimer = spawnInterval;
 				SpawnSegment ();
 			} else {
 				spawnTimer -= Time.deltaTime;
+			}
+
+			massCheckTimer -= Time.deltaTime;
+			if (massCheckTimer <= 0f) {
+				massCheckTimer = netMassCheckFrequency;
+				RecalculateNetMass ();
 			}
 		}
 	}
@@ -81,5 +94,17 @@ public class SegmentsManager : NetworkBehaviour {
 			yield return new WaitForSeconds (burstSpawnFrequency);
 		}
 
+	}
+
+	void RecalculateNetMass () {
+		float newNetMass = 0;
+		PolyController[] allPolies = FindObjectsOfType<PolyController> ();
+		foreach (var poly in allPolies) {
+			newNetMass += poly.GetNetMass ();
+		}
+		SegmentController[] allSegments = FindObjectsOfType<SegmentController> ();
+		newNetMass += allSegments.Length * segmentValue;
+		print ("Old: " + netMass + " New: " + newNetMass);
+		netMass = newNetMass;
 	}
 }
