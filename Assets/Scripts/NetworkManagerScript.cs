@@ -72,17 +72,17 @@ public class NetworkManagerScript : NetworkManager {
 		print ("Client Disconnect");
 		playerCount--;
 
-//		if (playerCount <= 0) {
-//			if (resetServer) {
-//				ResetServer ();
-//			}
-//			if (freezeServer) {
-//				FreezeServer ();
-//			}
-//		}
-
-		// remove from leaderboard
-		ScoreManager.instance.RemovePlayerData (conn.playerControllers[0].unetView.netId.Value);
+		if (playerCount <= 0) {
+			if (resetServer) {
+				ResetServer ();
+			}
+			if (freezeServer) {
+				FreezeServer ();
+			}
+		} else {
+			// remove from leaderboard
+			ScoreManager.instance.RemovePlayerData (conn.playerControllers[0].unetView.netId.Value);
+		}
 
 		base.OnServerDisconnect (conn);
 	}
