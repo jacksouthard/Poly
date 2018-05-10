@@ -38,13 +38,13 @@ public class SideController : NetworkBehaviour {
 				} else {
 					projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 					if (pc.master) {
-						pc.TakeDamage (possibleDamage.damage, transform, projectile.playerNetID);
+						pc.TakeDamage (possibleDamage.damage, transform, projectile.playerNetID.Value);
 						pc.RelayDestoryProjectile (projectile.gameObject);
 					}
 				}
 			} else if (pc.master) {
 				// case where daming object is not a projectile (like a spike)
-				pc.TakeDamage (possibleDamage.damage, transform, possibleDamage.GetComponentInParent<PolyController>().netId);
+				pc.TakeDamage (possibleDamage.damage, transform, possibleDamage.GetComponentInParent<PolyController>().netId.Value);
 			}
 		}
 	}

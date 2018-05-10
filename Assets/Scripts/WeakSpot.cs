@@ -17,10 +17,10 @@ public class WeakSpot : MonoBehaviour {
 				if (coll.gameObject.tag == "Projectile") {
 					Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
 					if (projectile.playerNetID != pc.netId) {
-						pc.HitInWeakSpot (projectile.playerNetID);
+						pc.HitInWeakSpot (projectile.playerNetID.Value);
 					}
 				} else {
-					pc.HitInWeakSpot (possibleDamage.GetComponentInParent<PolyController>().netId);
+					pc.HitInWeakSpot (possibleDamage.GetComponentInParent<PolyController>().netId.Value);
 				}
 			}
 		}
@@ -34,7 +34,7 @@ public class WeakSpot : MonoBehaviour {
 			} else {
 				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 				if (pc.master) {
-					pc.HitInWeakSpot (projectile.playerNetID);
+					pc.HitInWeakSpot (projectile.playerNetID.Value);
 					pc.RelayDestoryProjectile (projectile.gameObject);
 				}
 			}

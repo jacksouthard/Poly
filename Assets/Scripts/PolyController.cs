@@ -48,6 +48,9 @@ public class PolyController : NetworkBehaviour {
 	bool hasCooldown = false;
 
 	// UI
+	[SyncVar]
+	string playerName = "";
+
 	Transform uiContainer;
 	Transform nameCanvas;
 	Text nameText;
@@ -59,6 +62,10 @@ public class PolyController : NetworkBehaviour {
 	// STARTING ---------------------------------------------------------------------------------------
 
 	void Awake () {
+		// setup UI
+		uiContainer = transform.Find ("UI");
+		nameCanvas = uiContainer.Find ("NameTag");
+		nameText = nameCanvas.GetComponentInChildren<Text>();
 
 		SetupRendering();
 
@@ -79,30 +86,44 @@ public class PolyController : NetworkBehaviour {
 
 		// set up references
 		segmentValue = SegmentsManager.instance.segmentValue;
-		rb = GetComponent<Rigidbody2D>();
+		rb = GetComponent<Rigidbody2D> ();
 
-		// setup UI
-		uiContainer = transform.Find ("UI");
-		nameCanvas = uiContainer.Find ("NameTag");
-		nameText = nameCanvas.GetComponentInChildren<Text>();
+		if (isServer) {
+			// add poly to score manager
+			ScoreManager.instance.AddPlayerData (netId.Value, ai);
+			playerName = ScoreManager.instance.GetName (netId.Value);
+
+			RpcUpdateName (playerName);
+			if (!isClient) { // for server version
+				UpdateName (playerName);
+			}
+		} else if (playerName != "") {
+			UpdateName (playerName);
+		}
 
 		if (master) {
 			attractZone = GetComponent<CircleCollider2D> ();
-			// add self to score manager
-			ScoreManager.instance.AddPlayerData (netId, ai);
-			nameText.text = ScoreManager.instance.GetName (netId);
 
 			if (isLocalPlayer) {
-				CmdChangeSidesCount (sidesCountMin, netId, false); // not damaged, just reseting
+				CmdChangeSidesCount (sidesCountMin, 0, false); // not damaged, just reseting
 				CmdChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			} else if (ai) {
-				ChangeSidesCount (sidesCountMin, netId, false); // not damaged, just reseting
+				ChangeSidesCount (sidesCountMin, null); // not damaged, just reseting
 				ChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			}
 		} else {
 			SetSidesCount (sidesCount);
 			ExpressPartData (partData);
 		}
+	}
+
+	[ClientRpc]
+	void RpcUpdateName (string newName) {
+		UpdateName (newName);
+	}
+
+	void UpdateName (string newName) {
+		nameText.text = newName;
 	}
 
 	// NETWORK SYNCING ---------------------------------------------------------------------------
@@ -115,30 +136,32 @@ public class PolyController : NetworkBehaviour {
 	private int playerNumber;
 
 	[Command]
-	public void CmdChangeSidesCount (float newValue, NetworkInstanceId damagingNetID, bool damaged) {
-		ChangeSidesCount (newValue, damagingNetID, damaged);
+	public void CmdChangeSidesCount (float newValue, uint damagingNetID, bool damaged) {
+		uint? nullableID = null;
+		if (damaged) {
+			nullableID = damagingNetID;
+		}
+		ChangeSidesCount (newValue, nullableID);
 	}
-	public void ChangeSidesCount (float newValue, NetworkInstanceId damagingNetID, bool damaged) {
+	public void ChangeSidesCount (float newValue, uint? damagingNetID) { // runs on server
 		if (newValue < sidesCountMin && alive) {
 			// just died
-			if (damaged) {
+			if (damagingNetID != null) {
 				if (ai) {
-					KilledByPlayer (damagingNetID);
+					KilledByPlayer (damagingNetID.Value);
 				} else if (isLocalPlayer) {
-					CmdKilledByPlayer (damagingNetID);
+					CmdKilledByPlayer (damagingNetID.Value);
 				}
 			}
 
 			DetachAllParts ();
 
 			if (ai) { // b/c AI dont respawn
-				ScoreManager.instance.RemovePlayerData (netId);
+				ScoreManager.instance.RemovePlayerData (netId.Value);
 				MapManager.instance.AIDie();
 				Destroy (gameObject, 2f);
-			}
-
-			if (isLocalPlayer) {
-				ScoreManager.instance.ResetKills (netId);
+			} else {
+				ScoreManager.instance.ResetKills (netId.Value);
 			}
 
 			partData = "------------------------";
@@ -159,12 +182,16 @@ public class PolyController : NetworkBehaviour {
 		}
 	}
 
-	public void TakeDamage (float damage, Transform side, NetworkInstanceId damagingNetID) {
+	public void TakeDamage (float damage, Transform side, uint? damagingNetID) {
 		float damageInSides = damage * damageToSidesRatio;
 		if (ai) {
-			ChangeSidesCount (sidesCount - damageInSides, damagingNetID, true);
+			ChangeSidesCount (sidesCount - damageInSides, damagingNetID);
 		} else if (isLocalPlayer) {
-			CmdChangeSidesCount (sidesCount - damageInSides, damagingNetID, true);
+			if (damagingNetID == null) {
+				CmdChangeSidesCount (sidesCount - damageInSides, 0, false);
+			} else {
+				CmdChangeSidesCount (sidesCount - damageInSides, damagingNetID.Value, true);
+			}
 		}
 
 		StartCollectionCooldown ();
@@ -183,11 +210,11 @@ public class PolyController : NetworkBehaviour {
 
 
 	[Command]
-	void CmdKilledByPlayer (NetworkInstanceId killerID) {
+	public void CmdKilledByPlayer (uint killerID) {
 		KilledByPlayer (killerID);
 	}
 
-	void KilledByPlayer (NetworkInstanceId killerID) {
+	void KilledByPlayer (uint killerID) {
 		ScoreManager.instance.AddKill (killerID);
 	}
 
@@ -200,16 +227,20 @@ public class PolyController : NetworkBehaviour {
 		return ejectedSegments;
 	}
 
-	public void HitInWeakSpot (NetworkInstanceId damagingNetID) {
+	public void HitInWeakSpot (uint? damagingNetID) {
 		int segmentsCount = GetEjectedSegmentCount (sidesCount - sidesCountMin);
 
 		if (ai) {
 			RpcSpawnDeathExplosion ();
-			ChangeSidesCount (sidesCountMin - 0.1f, damagingNetID, true);
+			ChangeSidesCount (sidesCountMin - 0.1f, damagingNetID);
 			RelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
 		} else if (isLocalPlayer) {
 			CmdSpawnDeathExplosion ();
-			CmdChangeSidesCount (sidesCountMin - 0.01f, damagingNetID, true);
+			if (damagingNetID == null) {
+				CmdChangeSidesCount (sidesCountMin - 0.01f, 0, false);
+			} else {
+				CmdChangeSidesCount (sidesCountMin - 0.01f, damagingNetID.Value, true);
+			}
 			CmdRelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
 		}
 	}
@@ -315,14 +346,14 @@ public class PolyController : NetworkBehaviour {
 	// UI
 
 	void LateUpdate () {
-		if (rb.angularVelocity != 0) {
-			uiContainer.rotation = Quaternion.identity;
-		}
+		uiContainer.rotation = Quaternion.identity;
 	}
 
 	void UpdateUIPosition () {
-		float yPos = radius + 0.75f;
-		nameCanvas.localPosition = Vector3.down * yPos;
+		if (nameCanvas != null) {
+			float yPos = radius + 0.75f;
+			nameCanvas.localPosition = Vector3.down * yPos;
+		}
 	}
 
 	// MOVEMENT AND ROTATION ------------------------------------------------------------------------------------

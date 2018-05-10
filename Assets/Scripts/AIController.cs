@@ -248,7 +248,7 @@ public class AIController : NetworkBehaviour {
 			
 		if (closestAttachable != null && !sidesFull) {
 			return new ObjectOfInterest (ObjectOfInterest.Type.part, closestAttachable, 0f);
-		} else if (closestCollectable != null && !sidesFull) {
+		} else if (closestCollectable != null && shouldCollectSegments) {
 			return new ObjectOfInterest (ObjectOfInterest.Type.segment, closestCollectable, 0f);
 		} else {
 			return new ObjectOfInterest (ObjectOfInterest.Type.none, null, 0f);
