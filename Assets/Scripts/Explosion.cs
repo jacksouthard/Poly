@@ -8,8 +8,10 @@ public class Explosion : MonoBehaviour {
 	float normalStartSize = 0.3f;
 	float normalStartSpeed = 3f;
 	float normalBurstSize = 10f;
+	float normalLifetime = 0.5f;
 
-	float maxSizeDifference = 0.75f;
+	float minSize = 0.25f;
+	float maxSize = 3f;
 	float damgeToSizeRatio = 0.01f;
 
 	float timer;
@@ -26,7 +28,7 @@ public class Explosion : MonoBehaviour {
 	}
 
 	public void Init (float damage, Color color) {
-		float size = Mathf.Clamp (damage * damgeToSizeRatio, 1f - maxSizeDifference, 1f + maxSizeDifference);
+		float size = Mathf.Clamp (damage * damgeToSizeRatio, minSize, maxSize);
 
 		ps = GetComponent<ParticleSystem> ();
 		ParticleSystem.MainModule main = ps.main;
@@ -34,6 +36,7 @@ public class Explosion : MonoBehaviour {
 		main.startColor = color;
 		main.startSpeed = normalStartSpeed * size;
 		main.startSize = normalStartSize * size;
+		main.startLifetime = normalLifetime * size;
 		ParticleSystem.Burst burst = ps.emission.GetBurst (0);
 		burst.count = normalBurstSize * size;
 		ps.emission.SetBurst (0, burst);

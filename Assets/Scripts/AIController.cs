@@ -9,6 +9,7 @@ public class AIController : NetworkBehaviour {
 
 	bool shouldRotate = false;
 	bool sidesFull = false;
+	bool shouldCollectSegments = false;
 
 	// intelegence
 	float maxResponceDelay = 1f;
@@ -244,13 +245,13 @@ public class AIController : NetworkBehaviour {
 				}
 			}
 		}
-
-		if (closestCollectable == null) {
-			return new ObjectOfInterest (ObjectOfInterest.Type.none, null, 0f);
-		} else if (closestAttachable != null && !sidesFull) {
+			
+		if (closestAttachable != null && !sidesFull) {
 			return new ObjectOfInterest (ObjectOfInterest.Type.part, closestAttachable, 0f);
-		} else {
+		} else if (closestCollectable != null && !sidesFull) {
 			return new ObjectOfInterest (ObjectOfInterest.Type.segment, closestCollectable, 0f);
+		} else {
+			return new ObjectOfInterest (ObjectOfInterest.Type.none, null, 0f);
 		}
 	}
 
@@ -300,12 +301,6 @@ public class AIController : NetworkBehaviour {
 		partTypes [index] = modifiedType;
 
 		UpdateFullSideStatus ();
-
-//		string str = "|";
-//		foreach (var partType in partTypes) {
-//			str += "" + partType + "|";
-//		}
-//		print (str);
 	}
 
 	int GetDistanceBetweenIndexes (int index1, int index2) {
@@ -319,6 +314,14 @@ public class AIController : NetworkBehaviour {
 	}
 
 	public void UpdateFullSideStatus () {
+		// update sides
+		if (pc.sidesCount >= 11f) { // max is 12
+			shouldCollectSegments = false;
+		} else {
+			shouldCollectSegments = true;
+		}
+
+		// update parts
 		if (GetIndexOfPartType (PartData.PartType.none, false) == -1) {
 			sidesFull = true;
 		} else {

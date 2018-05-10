@@ -38,7 +38,6 @@ public class PolyController : NetworkBehaviour {
 
 	// visuals
 	bool rendered = true;
-	float renderDistance = 20f;
 	public Material fillMaterial;
 
 	// collection
@@ -155,7 +154,7 @@ public class PolyController : NetworkBehaviour {
  	}
 
 	int GetEjectedSegmentCount (float damageInSides) { // 100 dmg is 1 side
-		float ejectedMass = damageInSides / 2f;
+		float ejectedMass = damageInSides / 4f;
 		int ejectedSegments = Mathf.RoundToInt (ejectedMass / segmentValue);
 
 		SegmentsManager.instance.MassDestroyed (damageInSides - ejectedMass);	
@@ -180,9 +179,6 @@ public class PolyController : NetworkBehaviour {
 	[Command]
 	void CmdSpawnDeathExplosion () {
 		RpcSpawnDeathExplosion ();
-//		if (!isClient) {
-//			SpawnDeathExplosion ();
-//		}
 	}
 
 	[ClientRpc]
@@ -191,11 +187,21 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	void SpawnDeathExplosion () {
+		// should not spawn explosion if poly far away from player
+		if (!rendered) {
+			return;
+		}
+
 		// spawn explosion
 		GameObject prefab = Resources.Load ("Explosion") as GameObject;
 		Vector3 spawnPos = new Vector3 (transform.position.x, transform.position.y, -1f);
 		GameObject explosion = Instantiate (prefab, spawnPos, Quaternion.identity);
-		explosion.GetComponent<Explosion> ().Init (500f, GetPlayerColor()); // 500f for max size explosion
+
+
+		float sizeRange = sidesCountMax - sidesCountMin;
+		float sizeRatio = (sidesCount - sidesCountMin) / sizeRange;
+		float explosionSize = Mathf.Lerp (100f, 400f, sizeRatio);
+		explosion.GetComponent<Explosion> ().Init (explosionSize, GetPlayerColor());
 	}
 
 	[Command]
@@ -259,19 +265,13 @@ public class PolyController : NetworkBehaviour {
 			}
 		} else if (!isServer) {
 			// if random other poly in players game
-			float dstToPlayer = DistanceToPlayer();
-			if (!rendered && dstToPlayer < renderDistance) { // just came into render distance
+			if (!rendered && MapManager.instance.ShouldRender (transform.position)) { // just came into render distance
 				UpdateRendering();
 				rendered = true;
-			} else if (rendered && dstToPlayer > renderDistance) { // just left render distance
+			} else if (rendered && MapManager.instance.ShouldRender (transform.position)) { // just left render distance
 				rendered = false;
 			}
 		}
-	}
-
-	float DistanceToPlayer () {
-		Vector3 playerPos = MapManager.instance.playerTransform.position;
-		return (playerPos - transform.position).magnitude;
 	}
 
 	// MOVEMENT AND ROTATION ------------------------------------------------------------------------------------
@@ -667,7 +667,6 @@ public class PolyController : NetworkBehaviour {
 	// Update mesh and polygon collider, and sides geometry
 	void UpdateRendering ()
 	{
-//		print ("Updating Rendering for " + gameObject.name);
 		UpdateSizeSpeedMultiplier ();
 
 		float[] angles = CalculateAngles (sidesCount);

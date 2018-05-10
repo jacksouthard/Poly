@@ -12,6 +12,7 @@ public class MapManager : NetworkBehaviour {
 	Transform[] borders = new Transform[4];
 	public int mapSize;
 	public float spawnRange;
+	float renderDistance = 20f;
 	float spawnCheckRange = 4f; // distance away from others polys a poly tries to spawn
 
 	[Header("AI")]
@@ -68,6 +69,15 @@ public class MapManager : NetworkBehaviour {
 		}
 
 		return new Vector3 (possibleSpawn.x, possibleSpawn.y, 0f);
+	}
+
+	public bool ShouldRender (Vector3 position) {
+		float dstFromPlayer = (playerTransform.position - position).magnitude;
+		if (dstFromPlayer > renderDistance) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	bool SpawnPosAvailable (Vector2 spawn) {

@@ -6,7 +6,6 @@ public class SegmentsManager : NetworkBehaviour {
 	public static SegmentsManager instance;
 
 	public GameObject segmentPrefab;
-	float spawnMargin = 2f;
 	float spawnRadius;
 
 	float burstSpawnFrequency = 0.05f;

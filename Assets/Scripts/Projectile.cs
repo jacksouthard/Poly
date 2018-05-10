@@ -18,6 +18,11 @@ public class Projectile : NetworkBehaviour {
 		SpriteRenderer[] srs = GetComponentsInChildren<SpriteRenderer> ();
 
 		if (isClient) {
+			// should not render particle effects if to far from player
+			if (!MapManager.instance.ShouldRender (transform.position)) {
+				return;
+			}
+
 			// hide projectile
 			foreach (var sr in srs) {
 				sr.enabled = false;
