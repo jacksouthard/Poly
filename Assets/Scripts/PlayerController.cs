@@ -15,6 +15,10 @@ public class PlayerController : NetworkBehaviour {
 	float zoomPerSide = 0.5f;
 	float zoomTime = 3f;
 
+	// death
+	float deathWait = 2f;
+	float deathTimer = 0f;
+
 	PolyController pc;
 
 	void Awake () {
@@ -57,7 +61,14 @@ public class PlayerController : NetworkBehaviour {
 			return;
 		}
 
-		if (!pc.alive && Input.GetKeyDown(KeyCode.R)) {
+		if (deathTimer > 0f) {
+			deathTimer -= Time.deltaTime;
+			if (deathTimer <= 0f) {
+				StartRespawnAnimation ();
+			}
+		}
+
+		if (!pc.alive && Input.GetKeyDown(KeyCode.R) && deathTimer <= 0f) {
 			// respawn if dead
 			deathAnimator.SetTrigger ("Exit");
 			playerCamera.GetComponent<CameraController> ().ZoomIn ();
@@ -77,6 +88,10 @@ public class PlayerController : NetworkBehaviour {
 
 	public void PolyDied () {
 		playerCamera.GetComponent<CameraController> ().ZoomOut ();
+		deathTimer = deathWait;
+	}
+
+	void StartRespawnAnimation () {
 		deathAnimator.SetTrigger ("Enter");
 	}
 
