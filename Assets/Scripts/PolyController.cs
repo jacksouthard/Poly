@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class PolyController : NetworkBehaviour {
 	public bool ai = false;
@@ -46,6 +47,11 @@ public class PolyController : NetworkBehaviour {
 	float collectionCooldown;
 	bool hasCooldown = false;
 
+	// UI
+	Transform uiContainer;
+	Transform nameCanvas;
+	Text nameText;
+
 	// misc
 	public bool alive = true; // only matters locally
 	float knockBackMultiplier = 3f;
@@ -75,11 +81,16 @@ public class PolyController : NetworkBehaviour {
 		segmentValue = SegmentsManager.instance.segmentValue;
 		rb = GetComponent<Rigidbody2D>();
 
+		// setup UI
+		uiContainer = transform.Find ("UI");
+		nameCanvas = uiContainer.Find ("NameTag");
+		nameText = nameCanvas.GetComponentInChildren<Text>();
+
 		if (master) {
 			attractZone = GetComponent<CircleCollider2D> ();
-
 			// add self to score manager
 			ScoreManager.instance.AddPlayerData (netId, ai);
+			nameText.text = ScoreManager.instance.GetName (netId);
 
 			if (isLocalPlayer) {
 				CmdChangeSidesCount (sidesCountMin, netId, false); // not damaged, just reseting
@@ -300,6 +311,19 @@ public class PolyController : NetworkBehaviour {
 			}
 		}
 	}
+		
+	// UI
+
+	void LateUpdate () {
+		if (rb.angularVelocity != 0) {
+			uiContainer.rotation = Quaternion.identity;
+		}
+	}
+
+	void UpdateUIPosition () {
+		float yPos = radius + 0.75f;
+		nameCanvas.localPosition = Vector3.down * yPos;
+	}
 
 	// MOVEMENT AND ROTATION ------------------------------------------------------------------------------------
 
@@ -378,6 +402,7 @@ public class PolyController : NetworkBehaviour {
 		if (master) {
 			attractZone.enabled = active;
 		}
+		nameText.enabled = active;
 		mr.enabled = active;
 	}
 
@@ -829,6 +854,9 @@ public class PolyController : NetworkBehaviour {
 				}
 			}
 		}
+
+		// update UI
+		UpdateUIPosition();
 
 		// update AI if possible
 		if (ai) {

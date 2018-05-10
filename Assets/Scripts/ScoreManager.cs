@@ -49,6 +49,10 @@ public class ScoreManager : NetworkBehaviour {
 		print ("Reset kills for " + curData.name);
 	}
 
+	public string GetName (NetworkInstanceId netID) {
+		return playerDatas [netID].name;
+	}
+
 	public struct PlayerData {
 		public string name;
 		public int kills;
