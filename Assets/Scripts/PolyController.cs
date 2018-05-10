@@ -78,11 +78,14 @@ public class PolyController : NetworkBehaviour {
 		if (master) {
 			attractZone = GetComponent<CircleCollider2D> ();
 
+			// add self to score manager
+			ScoreManager.instance.AddPlayerData (netId, ai);
+
 			if (isLocalPlayer) {
-				CmdChangeSidesCount (sidesCountMin);
+				CmdChangeSidesCount (sidesCountMin, netId, false); // not damaged, just reseting
 				CmdChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			} else if (ai) {
-				ChangeSidesCount (sidesCountMin);
+				ChangeSidesCount (sidesCountMin, netId, false); // not damaged, just reseting
 				ChangePlayerNumber (Random.Range (0, PartsManager.instance.playerColors.Length));
 			}
 		} else {
@@ -101,16 +104,30 @@ public class PolyController : NetworkBehaviour {
 	private int playerNumber;
 
 	[Command]
-	public void CmdChangeSidesCount (float newValue) {
-		ChangeSidesCount (newValue);
+	public void CmdChangeSidesCount (float newValue, NetworkInstanceId damagingNetID, bool damaged) {
+		ChangeSidesCount (newValue, damagingNetID, damaged);
 	}
-	public void ChangeSidesCount (float newValue) {
+	public void ChangeSidesCount (float newValue, NetworkInstanceId damagingNetID, bool damaged) {
 		if (newValue < sidesCountMin && alive) {
+			// just died
+			if (damaged) {
+				if (ai) {
+					KilledByPlayer (damagingNetID);
+				} else if (isLocalPlayer) {
+					CmdKilledByPlayer (damagingNetID);
+				}
+			}
+
 			DetachAllParts ();
 
 			if (ai) { // b/c AI dont respawn
+				ScoreManager.instance.RemovePlayerData (netId);
 				MapManager.instance.AIDie();
 				Destroy (gameObject, 2f);
+			}
+
+			if (isLocalPlayer) {
+				ScoreManager.instance.ResetKills (netId);
 			}
 
 			partData = "------------------------";
@@ -131,12 +148,12 @@ public class PolyController : NetworkBehaviour {
 		}
 	}
 
-	public void TakeDamage (float damage, Transform side) {
+	public void TakeDamage (float damage, Transform side, NetworkInstanceId damagingNetID) {
 		float damageInSides = damage * damageToSidesRatio;
 		if (ai) {
-			ChangeSidesCount (sidesCount - damageInSides);
+			ChangeSidesCount (sidesCount - damageInSides, damagingNetID, true);
 		} else if (isLocalPlayer) {
-			CmdChangeSidesCount (sidesCount - damageInSides);
+			CmdChangeSidesCount (sidesCount - damageInSides, damagingNetID, true);
 		}
 
 		StartCollectionCooldown ();
@@ -153,6 +170,16 @@ public class PolyController : NetworkBehaviour {
 		}
  	}
 
+
+	[Command]
+	void CmdKilledByPlayer (NetworkInstanceId killerID) {
+		KilledByPlayer (killerID);
+	}
+
+	void KilledByPlayer (NetworkInstanceId killerID) {
+		ScoreManager.instance.AddKill (killerID);
+	}
+
 	int GetEjectedSegmentCount (float damageInSides) { // 100 dmg is 1 side
 		float ejectedMass = damageInSides / 4f;
 		int ejectedSegments = Mathf.RoundToInt (ejectedMass / segmentValue);
@@ -162,16 +189,16 @@ public class PolyController : NetworkBehaviour {
 		return ejectedSegments;
 	}
 
-	public void HitInWeakSpot () {
+	public void HitInWeakSpot (NetworkInstanceId damagingNetID) {
 		int segmentsCount = GetEjectedSegmentCount (sidesCount - sidesCountMin);
-		 
+
 		if (ai) {
 			RpcSpawnDeathExplosion ();
-			ChangeSidesCount (sidesCountMin - 0.1f);
+			ChangeSidesCount (sidesCountMin - 0.1f, damagingNetID, true);
 			RelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
 		} else if (isLocalPlayer) {
 			CmdSpawnDeathExplosion ();
-			CmdChangeSidesCount (sidesCountMin - 0.01f);
+			CmdChangeSidesCount (sidesCountMin - 0.01f, damagingNetID, true);
 			CmdRelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
 		}
 	}

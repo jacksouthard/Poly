@@ -77,11 +77,11 @@ public class PlayerController : NetworkBehaviour {
 
 		if (pc.alive) {
 			if (Input.GetKeyDown ("0")) { // for testing damage bursts
-				pc.TakeDamage (100f, pc.sidesGOArray [0].transform);
+				pc.TakeDamage (100f, pc.sidesGOArray [0].transform, netId);
 			}
 
 			if (Input.GetKeyDown ("9")) { // for testing instant death
-				pc.HitInWeakSpot ();
+				pc.HitInWeakSpot (netId);
 			}
 		}
 	}

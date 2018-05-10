@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class SideController : MonoBehaviour {
+public class SideController : NetworkBehaviour {
 	PolyController pc;
 
 	void Start () {
@@ -37,13 +38,13 @@ public class SideController : MonoBehaviour {
 				} else {
 					projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 					if (pc.master) {
-						pc.TakeDamage (possibleDamage.damage, transform);
+						pc.TakeDamage (possibleDamage.damage, transform, projectile.playerNetID);
 						pc.RelayDestoryProjectile (projectile.gameObject);
 					}
 				}
 			} else if (pc.master) {
 				// case where daming object is not a projectile (like a spike)
-				pc.TakeDamage (possibleDamage.damage, transform);
+				pc.TakeDamage (possibleDamage.damage, transform, possibleDamage.GetComponentInParent<PolyController>().netId);
 			}
 		}
 	}
