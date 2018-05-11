@@ -41,6 +41,10 @@ public class PolyController : NetworkBehaviour {
 	bool rendered = true;
 	public Material fillMaterial;
 
+	// instant death
+	float instantDeathWait = 0.5f;
+	bool dying = false;
+
 	// collection
 	float segmentValue;
 	float collectionCooldownAfterDamage = 7f;
@@ -136,7 +140,6 @@ public class PolyController : NetworkBehaviour {
 
 	void UpdateCrown (int newCrownID) {
 		if (crownImage == null) {
-			print ("Image null");
 			return;
 		}
 		if (newCrownID == -1) {
@@ -203,6 +206,9 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	public void TakeDamage (float damage, Transform side, uint? damagingNetID) {
+		if (dying) { // dont take damage if already dying
+			return;
+		}
 		float damageInSides = damage * damageToSidesRatio;
 		if (ai) {
 			ChangeSidesCount (sidesCount - damageInSides, damagingNetID);
@@ -248,6 +254,21 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	public void HitInWeakSpot (uint? damagingNetID) {
+		if (!dying) {
+			StartCoroutine (InstantDeathStart(damagingNetID));
+		}
+	}
+
+	IEnumerator InstantDeathStart (uint? damagingNetID) {
+		dying = true;
+		if (ai) {
+			RpcRelayDeathFlash ();
+		} else if (isLocalPlayer) {
+			CmdRelayDeathFlash ();
+		}
+		yield return new WaitForSeconds (instantDeathWait);
+
+		// timer done
 		int segmentsCount = GetEjectedSegmentCount (sidesCount - sidesCountMin);
 
 		if (ai) {
@@ -264,6 +285,37 @@ public class PolyController : NetworkBehaviour {
 			CmdRelayBurstSpawn (segmentsCount, new Vector2 (transform.position.x, transform.position.y), -1);
 		}
 	}
+
+	[Command]
+	void CmdRelayDeathFlash () {
+		RpcRelayDeathFlash ();
+	}
+
+	[ClientRpc]
+	void RpcRelayDeathFlash () {
+		StartCoroutine (FlashFill());
+	}
+
+	IEnumerator FlashFill () {
+		float timer;
+		Color startColor = mr.material.color;
+		Color targetColor = new Color (0.847f, 0.847f, 0.847f, 1f); // off white
+
+		for (int i = 1; i < 3; i++) {
+			timer = 0f;
+			float speed = i * 4;
+			while (timer <= 1f) {
+				timer += Time.deltaTime * speed;
+				float timeRatio = Mathf.Clamp01 (Mathf.Sin (9.87f * timer / Mathf.PI));
+				mr.material.color = Color.Lerp (startColor, targetColor, timeRatio);
+
+				yield return new WaitForEndOfFrame ();
+			}
+		}
+
+		mr.material.color = startColor;
+	}
+
 
 	[Command]
 	void CmdSpawnDeathExplosion () {
@@ -381,12 +433,16 @@ public class PolyController : NetworkBehaviour {
 	public void Move (Vector2 input)
 	{
 		// add force to poly
-		rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier);
+		if (!dying) {
+			rb.AddForce (input * speed * speedBoost * sizeSpeedMultiplier);
+		}
 	}
 
 	public void Rotate (float input)
 	{
-		rb.AddTorque(input * rotationSpeed);
+		if (!dying) {
+			rb.AddTorque (input * rotationSpeed);
+		}
 	}
 
 	// DEATH AND RESPAWNING ------------------------------------------------------------------------------------------------------------
@@ -434,6 +490,8 @@ public class PolyController : NetworkBehaviour {
 			if (hasCooldown) {
 				EndCollectionCooldown ();
 			}
+
+			dying = false;
 		}
 
 		alive = true;
@@ -454,6 +512,7 @@ public class PolyController : NetworkBehaviour {
 			attractZone.enabled = active;
 		}
 		nameText.enabled = active;
+		crownImage.enabled = active;
 		mr.enabled = active;
 	}
 

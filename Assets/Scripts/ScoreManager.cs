@@ -182,14 +182,16 @@ public class ScoreManager : NetworkBehaviour {
 				if (newPC != oldPC) { // case for different players
 					newPC.crownID = i; // award new crown
 					oldPC.crownID = -1; // remove old crown
+//					print ("Assigning crown to new player: " + i);
 				} else { // case for same player
-//					print ("Same player, same crowns: " + (i == oldPC.crownID));
 					if (i != oldPC.crownID) { // case for changed crown ids
 						newPC.crownID = i;
+//						print ("Same player different crowns: " + i);
 					}
 				}
 			} else {
 				newPC.crownID = i;
+//				print ("First setup: " + i);
 			}
 		}
 
