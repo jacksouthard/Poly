@@ -74,6 +74,14 @@ MonoBehaviour:
   - Ugly
   - Derp
   - Dumb
+  - Weird
+  - Anxious
+  - Bossy
+  - Dim
+  - Upbeat
+  - Devious
+  - Boring
+  - Nerdy
   nouns:
   - Bob
   - John
@@ -85,6 +93,11 @@ MonoBehaviour:
   - Fish
   - Whale
   - Donut
+  - Book
+  - Ben
+  - Jack
+  - Gump
+  - Fruit
 --- !u!114 &114855009090618322
 MonoBehaviour:
   m_ObjectHideFlags: 1
