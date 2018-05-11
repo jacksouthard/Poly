@@ -39,7 +39,7 @@ public class NetworkManagerScript : NetworkManager {
 			StartClient ();
 		} 
 	}
-
+		
 	public void JoinGame () {
 		// TODO test if server is active
 		StartClient();

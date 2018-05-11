@@ -84,9 +84,9 @@ public class PlayerController : NetworkBehaviour {
 				pc.HitInWeakSpot (null);
 			}
 
-			if (Input.GetKeyDown ("=")) { // for testing instant death
-				pc.CmdKilledByPlayer (netId.Value);
-			}
+//			if (Input.GetKeyDown ("=")) { // for testing instant death
+//				pc.CmdKilledByPlayer (netId.Value);
+//			}
 		}
 	}
 

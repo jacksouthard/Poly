@@ -50,10 +50,13 @@ public class PolyController : NetworkBehaviour {
 	// UI
 	[SyncVar]
 	string playerName = "";
+	[SyncVar(hook="UpdateCrown")]
+	public int crownID = -1;
 
 	Transform uiContainer;
 	Transform nameCanvas;
 	Text nameText;
+	Image crownImage;
 
 	// misc
 	public bool alive = true; // only matters locally
@@ -66,6 +69,7 @@ public class PolyController : NetworkBehaviour {
 		uiContainer = transform.Find ("UI");
 		nameCanvas = uiContainer.Find ("NameTag");
 		nameText = nameCanvas.GetComponentInChildren<Text>();
+		crownImage = nameCanvas.GetComponentInChildren<Image>();
 
 		SetupRendering();
 
@@ -90,7 +94,7 @@ public class PolyController : NetworkBehaviour {
 
 		if (isServer) {
 			// add poly to score manager
-			ScoreManager.instance.AddPlayerData (netId.Value, ai);
+			ScoreManager.instance.AddPlayerData (this, netId.Value, ai);
 			playerName = ScoreManager.instance.GetName (netId.Value);
 
 			RpcUpdateName (playerName);
@@ -99,6 +103,10 @@ public class PolyController : NetworkBehaviour {
 			}
 		} else if (playerName != "") {
 			UpdateName (playerName);
+		}
+
+		if (!isServer && crownID != -1) {
+			UpdateCrown (crownID);
 		}
 
 		if (master) {
@@ -124,6 +132,18 @@ public class PolyController : NetworkBehaviour {
 
 	void UpdateName (string newName) {
 		nameText.text = newName;
+	}
+
+	void UpdateCrown (int newCrownID) {
+		if (crownImage == null) {
+			print ("Image null");
+			return;
+		}
+		if (newCrownID == -1) {
+			crownImage.color = new Color (1f, 1f, 1f, 0f);
+		} else {
+			crownImage.color = ScoreManager.instance.leaderboardColors [newCrownID];
+		}
 	}
 
 	// NETWORK SYNCING ---------------------------------------------------------------------------

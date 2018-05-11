@@ -15,8 +15,8 @@ public class ScoreManager : NetworkBehaviour {
 
 	// ALTERING PLAYER DATA
 
-	public void AddPlayerData (uint netID, bool isBot) {
-		playerDatas.Add (netID, new PlayerData (GenerateName(isBot), 0));
+	public void AddPlayerData (PolyController pc, uint netID, bool isBot) {
+		playerDatas.Add (netID, new PlayerData (pc, GenerateName(isBot), 0));
 
 		if (leaderboardString == "-" && playerDatas.Count >= 3) {
 			CalculateScoreboard ();
@@ -54,10 +54,12 @@ public class ScoreManager : NetworkBehaviour {
 	}
 
 	public struct PlayerData {
+		public PolyController pc;
 		public string name;
 		public int kills;
 
-		public PlayerData (string _name, int _kills) {
+		public PlayerData (PolyController _pc, string _name, int _kills) {
+			pc = _pc;
 			name = _name;
 			kills = _kills;
 		}
@@ -76,7 +78,7 @@ public class ScoreManager : NetworkBehaviour {
 	void Start () {
 		Transform scoreboard = GameObject.Find ("Canvas").transform.Find ("Scoreboard");
 		for (int i = 0; i < slots.Length; i++) {
-			slots [i] = scoreboard.GetChild (i);
+			slots [i] = scoreboard.GetChild (i + 2);
 		}
 	
 		if (isClient) {
@@ -97,6 +99,18 @@ public class ScoreManager : NetworkBehaviour {
 		}
 	}
 
+	void RecalculateLowestKills () {
+		int lowestKills = 100;
+		foreach (var data in topPlayerDatas) {
+			if (data.kills < lowestKills) {
+				lowestKills = data.kills;
+			}
+		}
+	}
+
+	bool leaderboardSet = false;
+	PlayerData[] topPlayerDatas = new PlayerData[3];
+
 	void CalculateScoreboard () { // runs on server
 		if (playerDatas.Count < 3) {
 			print ("Not enough players to generate scoreboard");
@@ -114,9 +128,26 @@ public class ScoreManager : NetworkBehaviour {
 		foreach (uint key in playerDatas.Keys) {
 			int kills = playerDatas[key].kills;
 			if (kills > firstKills) {
+				if (firstNetID != null) { // displaced previous first place player
+					if (firstKills > secondKills) {
+						secondKills = firstKills;
+						secondNetID = firstNetID;
+					} else if (firstKills > thirdKills) {
+						thirdKills = firstKills;
+						thirdNetID = firstNetID;
+					} 
+				}
+				
 				firstKills = kills;
 				firstNetID = key;
 			} else if (kills > secondKills) {
+				if (secondNetID != null) { // displaced previous second place player
+					if (secondKills > thirdKills) {
+						thirdKills = secondKills;
+						thirdNetID = secondNetID;
+					} 
+				}
+
 				secondKills = kills;
 				secondNetID = key;
 			} else if (kills > thirdKills) {
@@ -127,11 +158,11 @@ public class ScoreManager : NetworkBehaviour {
 
 		lowestKills = thirdKills;
 
-		PlayerData[] topPlayerDatas = new PlayerData[3];
+		PlayerData[] newTopPlayerDatas = new PlayerData[3];
 		if (firstNetID != null && secondNetID != null && thirdNetID != null) {
-			topPlayerDatas [0] = playerDatas [firstNetID.Value];
-			topPlayerDatas [1] = playerDatas [secondNetID.Value];
-			topPlayerDatas [2] = playerDatas [thirdNetID.Value];
+			newTopPlayerDatas [0] = playerDatas [firstNetID.Value];
+			newTopPlayerDatas [1] = playerDatas [secondNetID.Value];
+			newTopPlayerDatas [2] = playerDatas [thirdNetID.Value];
 		} else {
 			print ("Leaderboard players not valid");
 			return;
@@ -139,13 +170,36 @@ public class ScoreManager : NetworkBehaviour {
 
 		// serialize leaderboard
 		string newLeaderboardString = "";
-		foreach (var data in topPlayerDatas) {
-			string slotString = data.name + "." + data.kills + "|";
+		for (int i = 0; i < newTopPlayerDatas.Length; i++) {
+			string slotString = newTopPlayerDatas[i].name + "." + newTopPlayerDatas[i].kills + "|";
 			newLeaderboardString += slotString;
-		}
-		newLeaderboardString = newLeaderboardString.Substring(0, newLeaderboardString.Length - 1);
 
+			// assign crown image on nametag for leaderboard players
+			PolyController newPC = newTopPlayerDatas[i].pc;
+			if (leaderboardSet) {
+				PolyController oldPC = topPlayerDatas [i].pc;
+
+				if (newPC != oldPC) { // case for different players
+					newPC.crownID = i; // award new crown
+					oldPC.crownID = -1; // remove old crown
+				} else { // case for same player
+//					print ("Same player, same crowns: " + (i == oldPC.crownID));
+					if (i != oldPC.crownID) { // case for changed crown ids
+						newPC.crownID = i;
+					}
+				}
+			} else {
+				newPC.crownID = i;
+			}
+		}
+
+		topPlayerDatas = newTopPlayerDatas;
+		RecalculateLowestKills ();
+
+		newLeaderboardString = newLeaderboardString.Substring(0, newLeaderboardString.Length - 1);
 		leaderboardString = newLeaderboardString;
+
+		leaderboardSet = true;
 
 		if (!isClient) {
 			RenderScoreboard (leaderboardString);
