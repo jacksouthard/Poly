@@ -267,6 +267,7 @@ public class PolyController : NetworkBehaviour {
 			CmdRelayDeathFlash ();
 		}
 		yield return new WaitForSeconds (instantDeathWait);
+		dying = false;
 
 		// timer done
 		int segmentsCount = GetEjectedSegmentCount (sidesCount - sidesCountMin);
