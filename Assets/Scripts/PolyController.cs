@@ -42,7 +42,7 @@ public class PolyController : NetworkBehaviour {
 	public Material fillMaterial;
 
 	// instant death
-	float instantDeathWait = 0.5f;
+	float instantDeathWait = 1f;
 	bool dying = false;
 
 	// collection
@@ -300,11 +300,12 @@ public class PolyController : NetworkBehaviour {
 	IEnumerator FlashFill () {
 		float timer;
 		Color startColor = mr.material.color;
-		Color targetColor = new Color (0.847f, 0.847f, 0.847f, 1f); // off white
+		Color offWhite = new Color (0.847f, 0.847f, 0.847f, 1f); // off white
+		Color targetColor = Color.Lerp (startColor, offWhite, 0.7f);
 
-		for (int i = 1; i < 3; i++) {
+		for (int i = 1; i < 4; i++) {
 			timer = 0f;
-			float speed = i * 4;
+			float speed = i * 3f;
 			while (timer <= 1f) {
 				timer += Time.deltaTime * speed;
 				float timeRatio = Mathf.Clamp01 (Mathf.Sin (9.87f * timer / Mathf.PI));

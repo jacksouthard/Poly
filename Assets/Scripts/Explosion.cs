@@ -5,7 +5,7 @@ using UnityEngine;
 public class Explosion : MonoBehaviour {
 	bool inited = false;
 
-	float normalStartSize = 0.3f;
+	float normalStartSize = 0.6f;
 	float normalStartSpeed = 3f;
 	float normalBurstSize = 10f;
 	float normalLifetime = 0.5f;
