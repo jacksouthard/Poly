@@ -69,6 +69,7 @@ public class ScoreManager : NetworkBehaviour {
 
 	// RENDERING UI
 	Transform[] slots = new Transform[3];
+	Transform scoreboard;
 	int lowestKills = -1;
 	public Color[] leaderboardColors;
 
@@ -76,7 +77,7 @@ public class ScoreManager : NetworkBehaviour {
 	string leaderboardString = "-";
 
 	void Start () {
-		Transform scoreboard = GameObject.Find ("Canvas").transform.Find ("Scoreboard");
+		scoreboard = GameObject.Find ("Canvas").transform.Find ("Scoreboard");
 		for (int i = 0; i < slots.Length; i++) {
 			slots [i] = scoreboard.GetChild (i + 2);
 		}
@@ -213,6 +214,11 @@ public class ScoreManager : NetworkBehaviour {
 			print ("Scoreboard not setup");
 			return;
 		}
+
+		if (!scoreboard.gameObject.activeInHierarchy) {
+			scoreboard.gameObject.SetActive (true);
+		}
+
 		string[] slotStrings = newString.Split('|');
 		for (int i = 0; i < slotStrings.Length; i++) {
 			string[] splitSlot = slotStrings [i].Split ('.');
