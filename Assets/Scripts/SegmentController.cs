@@ -25,14 +25,15 @@ public class SegmentController : MonoBehaviour {
 	}
 
 	void OnTriggerEnter2D (Collider2D coll) {
-		if (attracting) {
+		if (attracting && !collected) {
 			StartCollect ();
 		}
 	}
 
 	void StartCollect () {
+		// called if attracting on any players clients (not only master)
+		collected = true;
 		target.GetComponent<PolyController> ().HandleSegmentStartDestory (this.gameObject);
-//		GetComponent<SpriteRenderer> ().enabled = false;
 	}
 
 	void Update ()
