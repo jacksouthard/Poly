@@ -93,11 +93,15 @@ MonoBehaviour:
   - Fish
   - Whale
   - Donut
-  - Book
+  - Grump
   - Ben
   - Jack
   - Gump
   - Fruit
+  - Nerd
+  - Snake
+  - Albert
+  - Mom
 --- !u!114 &114855009090618322
 MonoBehaviour:
   m_ObjectHideFlags: 1
