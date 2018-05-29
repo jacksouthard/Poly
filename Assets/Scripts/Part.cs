@@ -32,7 +32,7 @@ public class Part : MonoBehaviour {
 	void OnTriggerEnter2D (Collider2D coll) {
 		if (coll.tag == "Projectile") {
 			Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
-			if (!projectile.live) {
+			if (!projectile.live || projectile.playerNetID == pc.netId) {
 				return; // projectile is either nonexistant or already has hit something
 			} else {
 				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
@@ -48,7 +48,6 @@ public class Part : MonoBehaviour {
 		if (master) {
 			health -= damage;
 			if (health <= 0f) {
-//			print ("Part Destoryed: " + gameObject);
 				pc.DestroyPartRequest (transform.parent.gameObject);
 			}
 		}
