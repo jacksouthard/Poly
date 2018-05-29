@@ -599,19 +599,17 @@ public class PolyController : NetworkBehaviour {
 		PartsManager.instance.PartDestoryed ();
 	}
 
-	void DestroyPart (int sideIndex) {
-		DestoryPart (sideIndex);
+	[Command]
+	void CmdDestroyPart (int sideIndex) {
+		DestroyPart (sideIndex);
 	}
-	void DestoryPart (int sideIndex) {
+
+	void DestroyPart (int sideIndex) {
 		AlterPartInData (-1, sideIndex); // -1 is code for --
 	}
 
 	public void DestroyPartRequest (GameObject side) {
-		if (isLocalPlayer) {
-			DestroyPart (int.Parse (side.name));
-		} else if (ai) {
-			DestoryPart (int.Parse (side.name));
-		}
+		DestroyPart (int.Parse (side.name));
 	}
 
 	[Command]
@@ -630,7 +628,7 @@ public class PolyController : NetworkBehaviour {
 		}
 	}
 
-	void DetachPart (int sideIndex) {
+	void DetachPart (int sideIndex) { // called on master when rendering updated
 		// spawn detached part
 		GameObject sideGO = sidesGOArray[sideIndex];
 		sideGO.GetComponentInChildren<Part> ().detaching = true;
@@ -642,9 +640,11 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		// destory part on poly
-		if (isServer) {
+		if (ai) {
 			DestroyPart (sideIndex);
-			RelayManualBackupExpressPartData ();
+//			RelayManualBackupExpressPartData ();
+		} else if (isLocalPlayer) {
+			CmdDestroyPart (sideIndex);
 		}
 	}
 
