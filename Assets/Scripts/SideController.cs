@@ -25,7 +25,7 @@ public class SideController : NetworkBehaviour {
 
 	void OnTriggerEnter2D (Collider2D coll) {
 		Damaging possibleDamage = coll.gameObject.GetComponentInParent<Damaging> ();
-		if (possibleDamage != null) {
+		if (possibleDamage != null && !possibleDamage.authorative) {
 			// case where daming object is projectile
 			if (coll.tag == "Projectile") {
 				Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();

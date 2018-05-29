@@ -23,7 +23,7 @@ public class Part : MonoBehaviour {
 		if (master) {
 //			print ("Part Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
 			Damaging damaging = coll.collider.gameObject.GetComponentInParent<Damaging> ();
-			if (damaging != null) {
+			if (damaging != null && !damaging.authorative) {
 				TakeDamage (damaging.damage);
 			}
 		}
@@ -44,7 +44,7 @@ public class Part : MonoBehaviour {
 		}
 	}
 
-	void TakeDamage (float damage) {
+	public void TakeDamage (float damage) {
 		if (master) {
 			health -= damage;
 			if (health <= 0f) {

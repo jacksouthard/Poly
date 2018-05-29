@@ -24,10 +24,13 @@ public class PartsManager : NetworkBehaviour {
 
 	[Header("Spawning")]
 	float spawnRadius;
-	private float spawnTimer;
-	private float spawnInterval = 0.5f; 
-	private int partCount = 0;
-	private int partCountMax = 20;
+	float spawnTimer;
+	float spawnInterval = 0.5f; 
+	int partCount = 0;
+	int partCountMax = 20;
+
+	float partSpawnZ = 5;
+	float projectileSpawnZ = 5;
 
 	void Awake () {
 		instance = this;
@@ -90,8 +93,9 @@ public class PartsManager : NetworkBehaviour {
 		}
 	}
 
-	public void SpawnDetachedPart (int partID, Vector3 spawnPos, Quaternion spawnRot) {
-		GameObject part = Instantiate (partPrefab, spawnPos, spawnRot) as GameObject;
+	public void SpawnDetachedPart (int partID, Vector2 spawnPos, Quaternion spawnRot) {
+		Vector3 spawnPos3D = new Vector3 (spawnPos.x, spawnPos.y, partSpawnZ);
+		GameObject part = Instantiate (partPrefab, spawnPos3D, spawnRot) as GameObject;
 		part.transform.position += part.transform.up * initialDetachDistance;
 		part.GetComponent<Rigidbody2D> ().AddRelativeForce (Vector2.up * detachForce);
 		part.GetComponent<PartController> ().Init(partID);
@@ -100,11 +104,11 @@ public class PartsManager : NetworkBehaviour {
 		partCount++;
 	}
 
-	public void SpawnProjectile (int projectileIndex, Vector3 spawnPos, Quaternion spawnRot, int playerNum, NetworkInstanceId playerNetID) {
+	public void SpawnProjectile (int projectileIndex, Vector2 spawnPos, Quaternion spawnRot, int playerNum, NetworkInstanceId playerNetID) {
 		GameObject prefab = projectiles [projectileIndex];
-		spawnPos += Vector3.forward * 1f; // shift back in layers
+		Vector3 spawnPos3D = new Vector3 (spawnPos.x, spawnPos.y, projectileSpawnZ);
 
-		GameObject newProjectile = Instantiate (prefab, spawnPos, spawnRot);
+		GameObject newProjectile = Instantiate (prefab, spawnPos3D, spawnRot);
 		Projectile projectileScript = newProjectile.GetComponent<Projectile> ();
 		projectileScript.playerNetID = playerNetID;
 		newProjectile.GetComponent<Rigidbody2D> ().velocity = newProjectile.transform.up * projectileScript.speed;

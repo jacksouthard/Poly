@@ -13,7 +13,7 @@ public class WeakSpot : MonoBehaviour {
 	{
 		if (pc.master) {
 			Damaging possibleDamage = coll.collider.gameObject.GetComponentInParent<Damaging> ();
-			if (possibleDamage != null) {
+			if (possibleDamage != null && !possibleDamage.authorative) {
 				if (coll.gameObject.tag == "Projectile") {
 					Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
 					if (projectile.playerNetID != pc.netId) {

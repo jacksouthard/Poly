@@ -22,7 +22,7 @@ public class PolyController : NetworkBehaviour {
 
 	// sides
 	const float damageToSidesRatio = 0.01f;
-	const float sidesCountMin = 2.2f;
+	const float sidesCountMin = 2.2f; // 2.2
 	const int sidesCountMax = 12;
 
 	// side prefabs
@@ -64,7 +64,7 @@ public class PolyController : NetworkBehaviour {
 
 	// misc
 	public bool alive = true; // only matters locally
-	float knockBackMultiplier = 3f;
+	float knockBackMultiplier = 4f;
 
 	// STARTING ---------------------------------------------------------------------------------------
 
@@ -648,6 +648,87 @@ public class PolyController : NetworkBehaviour {
 		}
 	}
 
+	// AUTHORATIVE DAMAGE
+	// part damage
+	public void HandleAssignPartDamage (GameObject otherPoly, int sideIndex, float damage) { // called by part on other client
+		// is local player authorative
+		NetworkInstanceId otherID = otherPoly.GetComponent<NetworkIdentity>().netId;
+		if (isLocalPlayer) {
+			CmdRelayAssignPartDamage (otherID, sideIndex, damage);
+		} else if (ai) {
+			RelayAssignPartDamage (otherID, sideIndex, damage);
+		}
+	}
+
+	[Command]
+	void CmdRelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage) {
+		RelayAssignPartDamage (otherPolyID, sideIndex, damage);
+	}
+
+	void RelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage) {
+		// runs on server
+		PolyController otherPolyController = NetworkServer.FindLocalObject (otherPolyID).GetComponent<PolyController>();
+		if (otherPolyController.ai) {
+			otherPolyController.PartTakeDamage (sideIndex, damage);
+		} else { // is other client
+			otherPolyController.RpcRelayPartTakeDamage (sideIndex, damage);
+		}
+	}
+
+	[ClientRpc]
+	public void RpcRelayPartTakeDamage (int sideIndex, float damage) {
+		if (master) {
+			PartTakeDamage (sideIndex, damage);
+		}
+	}
+
+	public void PartTakeDamage (int sideIndex, float damage) {
+		sidesGOArray [sideIndex].GetComponentInChildren<Part> ().TakeDamage (damage);
+	}
+
+	// side damage
+	public void HandleAssignSideDamage (GameObject otherPoly, int sideIndex, float damage, bool weakSpotHit) { // called by side on other client
+		// is local player authorative
+		NetworkInstanceId otherID = otherPoly.GetComponent<NetworkIdentity>().netId;
+		if (isLocalPlayer) {
+			CmdRelayAssignSideDamage (otherID, sideIndex, damage, weakSpotHit);
+		} else if (ai) {
+			RelayAssignSideDamage (otherID, sideIndex, damage, netId.Value, weakSpotHit);
+		}
+	}
+
+	[Command]
+	void CmdRelayAssignSideDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage, bool weakSpotHit) {
+		RelayAssignSideDamage (otherPolyID, sideIndex, damage, netId.Value, weakSpotHit);
+	}
+
+	void RelayAssignSideDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage, uint damagingNetID, bool weakSpotHit) {
+		// runs on server
+		PolyController otherPolyController = NetworkServer.FindLocalObject (otherPolyID).GetComponent<PolyController>();
+		if (otherPolyController.ai) {
+			otherPolyController.SideTakeDamage (sideIndex, damage, damagingNetID, weakSpotHit);
+		} else { // is other client
+			otherPolyController.RpcRelaySideTakeDamage (sideIndex, damage, damagingNetID, weakSpotHit);
+		}
+	}
+
+	[ClientRpc]
+	public void RpcRelaySideTakeDamage (int sideIndex, float damage, uint damagingNetID, bool weakSpotHit) {
+		if (master) {
+			SideTakeDamage (sideIndex, damage, damagingNetID, weakSpotHit);
+		}
+	}
+
+	public void SideTakeDamage (int sideIndex, float damage, uint damagingNetID, bool weakSpotHit) {
+		if (!weakSpotHit) {
+			TakeDamage (damage, sidesGOArray [sideIndex].transform, damagingNetID);
+		} else {
+			HitInWeakSpot (damagingNetID);
+		}
+	}
+
+
+	// SERIALIZATION
 	void AlterPartInData (int partID, int sideIndex) {
 		string IDString = "";
 
@@ -761,15 +842,12 @@ public class PolyController : NetworkBehaviour {
 		ProjectilePart projectilePart = sidesGOArray [partIndex].GetComponentInChildren<ProjectilePart> ();
 		int projectileIndex = projectilePart.projectileIndex;
 
-//		Vector3 posDiff = playerPos - transform.position;
-//		float rotDiff = playerRotZ - transform.eulerAngles.z;
-
 		transform.position = playerPos;
 		transform.rotation = Quaternion.Euler (new Vector3 (0f, 0f, playerRotZ));
 
 		List<Transform> projectileSpawns = projectilePart.GetProjectileSpawns ();
 		foreach (Transform spawn in projectileSpawns) {
-			Vector3 spawnPos = spawn.position; // positions on server version
+			Vector2 spawnPos = spawn.position; // positions on server version
 			Quaternion spawnRot = spawn.rotation;
 
 			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber, netId);
