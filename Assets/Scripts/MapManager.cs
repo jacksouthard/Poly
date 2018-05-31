@@ -23,7 +23,12 @@ public class MapManager : NetworkBehaviour {
 	public int aiCount = 0;
 
 	void Awake () {
-		instance = this;
+		DontDestroyOnLoad (gameObject);
+		if (!instance) {
+			instance = this;
+		} else {
+			Destroy (gameObject);
+		}
 		spawnRange = (mapSize / 2f) - 5f; 
 	}
 

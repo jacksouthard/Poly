@@ -18,7 +18,7 @@ public class SegmentsManager : NetworkBehaviour {
 	public float maxMass;
 
 	// net mass checking
-	float netMassCheckFrequency = 45f;
+	float netMassCheckFrequency = 90f;
 	float massCheckTimer;
 
 	float spawnTimer;

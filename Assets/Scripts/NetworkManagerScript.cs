@@ -3,9 +3,12 @@ using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class NetworkManagerScript : NetworkManager {
 	public static NetworkManagerScript instance;
+	public int versionNumber;
+
 	public bool master = false;
 
 	public Text playText;
@@ -26,7 +29,18 @@ public class NetworkManagerScript : NetworkManager {
 	public RunAs runAs;
 
 	void Awake () {
-		instance = this;
+		if (!instance) {
+			instance = this;
+		} else {
+			Destroy (gameObject);
+		}
+//		print ("Scene: " + (SceneManager.GetActiveScene ().name == "Main"));
+//		print ("In: " + GameData.instance.incompadibleVersion);
+//		if (SceneManager.GetActiveScene ().name == "Main" && GameData.instance.incompadibleVersion) {
+//			print ("a");
+//			MakeMenuIncompadible ();
+//		}
+
 //		useWebSockets = true;
 	}
 
@@ -100,5 +114,19 @@ public class NetworkManagerScript : NetworkManager {
 	void ResumeServer () {
 		print ("Resuming Server");
 		Time.timeScale = 1f;
+	}
+
+	public void IncompadibleVersion () {
+		print ("Incompadible Version");
+		GameData.instance.incompadibleVersion = true;
+		StopClient ();
+	}
+
+	void MakeMenuIncompadible () {
+		Transform startButton = GameObject.Find ("Canvas").transform.Find ("Menu").Find ("ButtonStart");
+		playText = startButton.GetComponentInChildren<Text> ();
+		playText.fontSize = 30;
+		playText.text = "Incompadible Version";
+		startButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
 	}
 }

@@ -337,6 +337,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2624ef07920d842ebb272c7d1fe2d8d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  versionNumber: 0
   playerTransform: {fileID: 0}
   mapSize: 100
   spawnRange: 0

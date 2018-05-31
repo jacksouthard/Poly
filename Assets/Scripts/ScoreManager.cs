@@ -82,7 +82,7 @@ public class ScoreManager : NetworkBehaviour {
 			slots [i] = scoreboard.GetChild (i + 2);
 		}
 	
-		if (isClient) {
+		if (!isServer) {
 			RenderScoreboard (leaderboardString);
 		}
 	}

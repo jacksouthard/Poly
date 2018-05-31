@@ -80,6 +80,11 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	void Start() {
+		// check version
+		if (!isServer && isLocalPlayer) {
+			CmdRequestServerVersion ();
+		}
+
 		aiCon = GetComponent<AIController> ();
 		if (aiCon != null && isServer) {
 			ai = true;
@@ -1092,6 +1097,22 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		return angles;
+	}
+
+	// VERSION CHECKS --------------------------------------------------------------------------------------------------
+
+	[Command]
+	void CmdRequestServerVersion () {
+		RpcRecieveServerVersion (NetworkManagerScript.instance.versionNumber);
+	}
+
+	[ClientRpc]
+	void RpcRecieveServerVersion (int serverVersion) {
+//		print ("L: " + isLocalPlayer + " SV: " + serverVersion + " LV: " + NetworkManagerScript.instance.versionNumber);
+		if (isLocalPlayer && NetworkManagerScript.instance.versionNumber != serverVersion) {
+			// not compadible version
+			NetworkManagerScript.instance.IncompadibleVersion();
+		}
 	}
 
 	// HELPERS ---------------------------------------------------------------------------------------------------------------
