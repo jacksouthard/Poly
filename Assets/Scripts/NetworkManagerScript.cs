@@ -51,7 +51,9 @@ public class NetworkManagerScript : NetworkManager {
 			StartHost ();
 		} else if (runAs == RunAs.client) {
 			StartClient ();
-		} 
+		}
+
+		GameObject.Find ("Canvas").transform.Find ("Version").GetComponent<Text> ().text = "V" + versionNumber;
 	}
 		
 	public void JoinGame () {
