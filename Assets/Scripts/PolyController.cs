@@ -657,6 +657,7 @@ public class PolyController : NetworkBehaviour {
 	// part damage
 	public void HandleAssignPartDamage (GameObject otherPoly, int sideIndex, float damage) { // called by part on other client
 		// is local player authorative
+//		print ("Plan to deal damage to " + otherPoly);
 		NetworkInstanceId otherID = otherPoly.GetComponent<NetworkIdentity>().netId;
 		if (isLocalPlayer) {
 			CmdRelayAssignPartDamage (otherID, sideIndex, damage);
@@ -672,6 +673,7 @@ public class PolyController : NetworkBehaviour {
 
 	void RelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage) {
 		// runs on server
+//		print ("Relay on server");
 		PolyController otherPolyController = NetworkServer.FindLocalObject (otherPolyID).GetComponent<PolyController>();
 		if (otherPolyController.ai) {
 			otherPolyController.PartTakeDamage (sideIndex, damage);
@@ -682,7 +684,9 @@ public class PolyController : NetworkBehaviour {
 
 	[ClientRpc]
 	public void RpcRelayPartTakeDamage (int sideIndex, float damage) {
+//		print ("Got client RPC");
 		if (master) {
+//			print ("Finnally Part Take Damage");
 			PartTakeDamage (sideIndex, damage);
 		}
 	}

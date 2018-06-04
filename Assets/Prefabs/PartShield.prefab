@@ -22,7 +22,8 @@ GameObject:
   - component: {fileID: 212421328913375780}
   - component: {fileID: 61449747216383062}
   - component: {fileID: 114038634999236684}
-  m_Layer: 9
+  - component: {fileID: 60968974029271174}
+  m_Layer: 13
   m_Name: PartShield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38,7 +39,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4211654878892878}
   - component: {fileID: 120173234105861936}
-  - component: {fileID: 60446302910749640}
   m_Layer: 13
   m_Name: Shield
   m_TagString: Untagged
@@ -73,12 +73,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!60 &60446302910749640
+--- !u!60 &60968974029271174
 PolygonCollider2D:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1594157124963450}
+  m_GameObject: {fileID: 1282808061178814}
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
@@ -88,22 +88,20 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1.1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.60268015, y: 0.63716626}
-      - {x: -0.002526939, y: 0.7430111}
-      - {x: -0.60021734, y: 0.6487113}
-      - {x: -1.0152264, y: 0.30173016}
-      - {x: -0.7999544, y: 0.0039924383}
-      - {x: 0.7910651, y: 0.00075125694}
-      - {x: 1.016509, y: 0.31704736}
+    - - {x: 1.5332392, y: 0.5347196}
+      - {x: 0.65241843, y: 1.1434991}
+      - {x: -0.6172079, y: 1.1613358}
+      - {x: -1.5478506, y: 0.50357807}
+      - {x: 0.0025458336, y: -0.0045448244}
 --- !u!61 &61449747216383062
 BoxCollider2D:
   m_ObjectHideFlags: 1
@@ -180,14 +178,16 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 1, y: 0.3, z: 0}
-  - {x: 0.6, y: 0.6, z: 1}
-  - {x: 0, y: 0.7, z: 1}
-  - {x: -0.6, y: 0.6, z: 1}
-  - {x: -1, y: 0.3, z: 1}
+  - {x: 1.5, y: 0.5, z: 0}
+  - {x: 1.1, y: 0.9, z: 0}
+  - {x: 0.6, y: 1.1, z: 0}
+  - {x: 0, y: 1.2, z: 0}
+  - {x: -0.6, y: 1.1, z: 0}
+  - {x: -1.1, y: 0.9, z: 0}
+  - {x: -1.5, y: 0.5, z: 0}
   m_Parameters:
     serializedVersion: 2
-    widthMultiplier: 0.05
+    widthMultiplier: 0.07
     widthCurve:
       serializedVersion: 2
       m_Curve:

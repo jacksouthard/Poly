@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class ShieldPart : Part {
 	public float shieldHealth;
+	float maxShieldHealth;
 	public float regenTime;
 	float regenTimer;
 	bool shieldBroken;
 
 	GameObject shieldGO;
 	LineRenderer shieldLine;
+	PolygonCollider2D shieldColl;
 
 	Vector3[] originalPositions;
 	float curAnimateTime = 0f;
@@ -17,9 +19,11 @@ public class ShieldPart : Part {
 //	float scrambleSpeed;
 
 	void Start () {
+		maxShieldHealth = shieldHealth;
 		shieldGO = transform.Find ("Shield").gameObject;
 		shieldLine = shieldGO.GetComponent<LineRenderer> ();
 		shieldLine.material.color = pc.GetPlayerColor ();
+		shieldColl = GetComponent<PolygonCollider2D> ();
 		originalPositions = new Vector3[shieldLine.positionCount];
 		shieldLine.GetPositions (originalPositions);
 		ShieldBreak ();
@@ -47,7 +51,7 @@ public class ShieldPart : Part {
 	}
 
 	public override void TakeDamage (float damage, bool melee) {
-		print ("Sheild damaged. Dmg: " + damage + " Melee: " + melee + " LP: " + pc.isLocalPlayer); 
+//		print ("Sheild damaged. Dmg: " + damage + " Melee: " + melee + " LP: " + pc.isLocalPlayer); 
 		if (shieldBroken || melee) {
 			health -= damage;
 			if (health <= 0f) {
@@ -55,7 +59,7 @@ public class ShieldPart : Part {
 			}
 		} else {
 			shieldHealth -= damage;
-			print (shieldHealth);
+//			print (shieldHealth);
 			if (shieldHealth <= 0f) {
 				ShieldBreak();
 				pc.RelaySheildStateChange (int.Parse (transform.parent.name), false); // break
@@ -67,11 +71,14 @@ public class ShieldPart : Part {
 		shieldBroken = true;
 		regenTimer = regenTime;
 		shieldGO.SetActive (false);
+		shieldColl.enabled = false;
 	}
 
 	void ShieldDeploy () {
+		shieldHealth = maxShieldHealth;
 		shieldBroken = false;
 		shieldGO.SetActive (true);
+		shieldColl.enabled = true;
 	}
 
 	public void AlterShieldState (bool deploying) {
@@ -98,7 +105,7 @@ public class ShieldPart : Part {
 		shieldLine.SetPositions (originalPositions);
 	}
 
-//	void OnTriggerEnter2D (Collider2D coll) {
-//		curAnimateTime += 0.5f;
-//	}
+	void OnTriggerStay2D (Collider2D coll) {
+		curAnimateTime = 0.5f;
+	}
 }
