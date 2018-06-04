@@ -7,7 +7,7 @@ public class Part : MonoBehaviour {
 	public bool detaching = false;
 
 	public float maxHealth;
-	float health;
+	protected float health;
 
 	protected PolyController pc;
 
@@ -24,7 +24,7 @@ public class Part : MonoBehaviour {
 //			print ("Part Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
 			Damaging damaging = coll.collider.gameObject.GetComponentInParent<Damaging> ();
 			if (damaging != null && !damaging.authorative) {
-				TakeDamage (damaging.damage);
+				TakeDamage (damaging.damage, true);
 			}
 		}
 	}
@@ -38,18 +38,16 @@ public class Part : MonoBehaviour {
 				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 				if (master) {
 					pc.RelayDestoryProjectile (projectile.gameObject);
-					TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage);
+					TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage, false);
 				}
 			}
 		}
 	}
 
-	public void TakeDamage (float damage) {
-		if (master) {
-			health -= damage;
-			if (health <= 0f) {
-				pc.DestroyPartRequest (transform.parent.gameObject);
-			}
+	public virtual void TakeDamage (float damage, bool melee) {
+		health -= damage;
+		if (health <= 0f) {
+			pc.DestroyPartRequest (transform.parent.gameObject);
 		}
 	}
 }

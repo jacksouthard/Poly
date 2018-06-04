@@ -688,7 +688,7 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	public void PartTakeDamage (int sideIndex, float damage) {
-		sidesGOArray [sideIndex].GetComponentInChildren<Part> ().TakeDamage (damage);
+		sidesGOArray [sideIndex].GetComponentInChildren<Part> ().TakeDamage (damage, true); // melee b/c only spike is authorative
 	}
 
 	// side damage
@@ -832,6 +832,32 @@ public class PolyController : NetworkBehaviour {
 		Destroy (NetworkServer.FindLocalObject (netID));
 	} 
 
+	// shielding relays
+	public void RelaySheildStateChange (int partIndex, bool deploying) {
+		if (isLocalPlayer) {
+			CmdRelaySheildStateChange (partIndex, deploying);
+		} else if (ai) {
+			ChangeSheildStateChange (partIndex, deploying);
+			RpcRelaySheildStateChange (partIndex, deploying);
+		}
+	}
+
+	[Command]
+	void CmdRelaySheildStateChange (int partIndex, bool deploying) {
+		ChangeSheildStateChange (partIndex, deploying);
+		RpcRelaySheildStateChange (partIndex, deploying);
+	}
+
+	[ClientRpc]
+	void RpcRelaySheildStateChange (int partIndex, bool deploying) {
+		ChangeSheildStateChange (partIndex, deploying);
+	}
+
+	void ChangeSheildStateChange (int partIndex, bool deploying) {
+		sidesGOArray [partIndex].GetComponentInChildren<ShieldPart> ().AlterShieldState (deploying);
+	}
+
+	// projectile part relays
 	public void RelayPartFire (int partIndex) {
 		if (isLocalPlayer) {
 			CmdRelayPartFire (partIndex, transform.position, transform.eulerAngles.z);

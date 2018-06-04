@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4473215587866966}
   - component: {fileID: 212769799627655118}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 114885022276743882}
   - component: {fileID: 114304483143714602}
   - component: {fileID: 114577557977725486}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: LightBlast
   m_TagString: Projectile
   m_Icon: {fileID: 0}
@@ -167,6 +167,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 35
+  authorative: 0
+  hitCooldown: 0
 --- !u!114 &114885022276743882
 MonoBehaviour:
   m_ObjectHideFlags: 1

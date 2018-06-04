@@ -15,7 +15,6 @@ public class Projectile : NetworkBehaviour {
 
 	public void Hit () {
 		live = false;
-		SpriteRenderer[] srs = GetComponentsInChildren<SpriteRenderer> ();
 
 		if (isClient) {
 			// should not render particle effects if to far from player
@@ -24,6 +23,7 @@ public class Projectile : NetworkBehaviour {
 			}
 
 			// hide projectile
+			SpriteRenderer[] srs = GetComponentsInChildren<SpriteRenderer> ();
 			foreach (var sr in srs) {
 				sr.enabled = false;
 			}

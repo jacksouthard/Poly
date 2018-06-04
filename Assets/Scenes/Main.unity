@@ -402,7 +402,7 @@ MonoBehaviour:
   playerCount: 0
   freezeServer: 1
   resetServer: 1
-  runAs: 3
+  runAs: 0
 --- !u!1 &538002887
 GameObject:
   m_ObjectHideFlags: 0

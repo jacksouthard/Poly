@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4618361713866972}
   - component: {fileID: 212031010748826580}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Beam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,7 +36,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4427551672145394}
   - component: {fileID: 212296395402968548}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Beam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -52,7 +52,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4800676520316858}
   - component: {fileID: 212020235004800364}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Beam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -74,7 +74,7 @@ GameObject:
   - component: {fileID: 114735920652441628}
   - component: {fileID: 58038842903717308}
   - component: {fileID: 114014653710543510}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Shell
   m_TagString: Projectile
   m_Icon: {fileID: 0}
@@ -263,6 +263,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 100
+  authorative: 0
+  hitCooldown: 0
 --- !u!212 &212020235004800364
 SpriteRenderer:
   m_ObjectHideFlags: 1

@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4240308324557806}
   - component: {fileID: 212673092082046758}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 114091640771778178}
   - component: {fileID: 114728161124232998}
   - component: {fileID: 114632681624934608}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: HeavyBlast
   m_TagString: Projectile
   m_Icon: {fileID: 0}
@@ -164,6 +164,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 125
+  authorative: 0
+  hitCooldown: 0
 --- !u!114 &114632681624934608
 MonoBehaviour:
   m_ObjectHideFlags: 1
