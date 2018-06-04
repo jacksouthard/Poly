@@ -17,6 +17,7 @@ public class ShieldPart : Part {
 	float curAnimateTime = 0f;
 	float scrambleDistance = 0.1f;
 //	float scrambleSpeed;
+	bool shouldAnimate = false; // for optimization
 
 	void Start () {
 		maxShieldHealth = shieldHealth;
@@ -34,7 +35,7 @@ public class ShieldPart : Part {
 			curAnimateTime -= Time.deltaTime;
 			if (curAnimateTime <= 0f) {
 				ResetShieldVisuals ();
-			} else if (MapManager.instance.ShouldRender (transform.position)) {
+			} else if (shouldAnimate) {
 				Scramble ();
 			}
 		}
@@ -59,6 +60,7 @@ public class ShieldPart : Part {
 			}
 		} else {
 			shieldHealth -= damage;
+
 //			print (shieldHealth);
 			if (shieldHealth <= 0f) {
 				ShieldBreak();
@@ -105,7 +107,8 @@ public class ShieldPart : Part {
 		shieldLine.SetPositions (originalPositions);
 	}
 
-	void OnTriggerStay2D (Collider2D coll) {
+	protected override void HitByProjectile () {
+		shouldAnimate = MapManager.instance.ShouldRender (transform.position);
 		curAnimateTime = 0.5f;
 	}
 }

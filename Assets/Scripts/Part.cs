@@ -36,6 +36,7 @@ public class Part : MonoBehaviour {
 				return; // projectile is either nonexistant or already has hit something
 			} else {
 				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
+				HitByProjectile();
 				if (master) {
 					pc.RelayDestoryProjectile (projectile.gameObject);
 					TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage, false);
@@ -43,6 +44,8 @@ public class Part : MonoBehaviour {
 			}
 		}
 	}
+
+	protected virtual void HitByProjectile () {} // mainly for visual effects (shields)
 
 	public virtual void TakeDamage (float damage, bool melee) {
 		health -= damage;
