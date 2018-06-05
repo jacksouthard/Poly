@@ -30,12 +30,12 @@ public class SideController : NetworkBehaviour {
 			if (coll.tag == "Projectile") {
 				Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
 
-				if (!projectile.live || projectile.playerNetID == pc.netId) {
+				if (!projectile.live || projectile.playerNetID == pc.netId.Value) {
 					return; // projectile is either nonexistant or already has hit something
 				} else {
 					projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 					if (pc.master) {
-						pc.TakeDamage (possibleDamage.damage, transform, projectile.playerNetID.Value);
+						pc.TakeDamage (possibleDamage.damage, transform, projectile.playerNetID);
 						pc.RelayDestoryProjectile (projectile.gameObject);
 					}
 				}

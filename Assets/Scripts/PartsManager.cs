@@ -110,7 +110,7 @@ public class PartsManager : NetworkBehaviour {
 
 		GameObject newProjectile = Instantiate (prefab, spawnPos3D, spawnRot);
 		Projectile projectileScript = newProjectile.GetComponent<Projectile> ();
-		projectileScript.playerNetID = playerNetID;
+		projectileScript.playerNetID = playerNetID.Value;
 		newProjectile.GetComponent<Rigidbody2D> ().velocity = newProjectile.transform.up * projectileScript.speed;
 
 		NetworkServer.Spawn (newProjectile);

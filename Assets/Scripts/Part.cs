@@ -32,12 +32,16 @@ public class Part : MonoBehaviour {
 	void OnTriggerEnter2D (Collider2D coll) {
 		if (coll.tag == "Projectile") {
 			Projectile projectile = coll.gameObject.GetComponentInParent<Projectile> ();
-			if (!projectile.live || projectile.playerNetID == pc.netId) {
-				return; // projectile is either nonexistant or already has hit something
-			} else {
+			if (projectile.live && projectile.playerNetID != pc.netId.Value) { // projectile must still be live and have been shot my a different player
+				if (!projectile.idSet) {
+					print ("Projectile player net id not set");
+					return;
+				}
+
 				projectile.Hit (); // only needs to be assigned locally as same projectile cannot really hit 2 different players
 				HitByProjectile();
 				if (master) {
+//					print ("Part " + pc.netId + " hit by " + projectile.playerNetID + " | " + projectile.idSet);
 					pc.RelayDestoryProjectile (projectile.gameObject);
 					TakeDamage (coll.gameObject.GetComponentInParent<Damaging>().damage, false);
 				}
@@ -50,6 +54,9 @@ public class Part : MonoBehaviour {
 	public virtual void TakeDamage (float damage, bool melee) {
 		health -= damage;
 		if (health <= 0f) {
+//			if (pc.isLocalPlayer) {
+//				print ("Dest");
+//			}
 			pc.DestroyPartRequest (transform.parent.gameObject);
 		}
 	}

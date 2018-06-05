@@ -100,6 +100,7 @@ public class PolyController : NetworkBehaviour {
 		// set up references
 		segmentValue = SegmentsManager.instance.segmentValue;
 		rb = GetComponent<Rigidbody2D> ();
+		rb.centerOfMass = Vector2.zero;
 
 		if (isServer) {
 			// add poly to score manager
@@ -692,6 +693,9 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	public void PartTakeDamage (int sideIndex, float damage) {
+//		if (isLocalPlayer) {
+//			print ("Dealing damage to part");
+//		}
 		sidesGOArray [sideIndex].GetComponentInChildren<Part> ().TakeDamage (damage, true); // melee b/c only spike is authorative
 	}
 
@@ -878,7 +882,7 @@ public class PolyController : NetworkBehaviour {
 		int projectileIndex = projectilePart.projectileIndex;
 
 		transform.position = playerPos;
-		transform.rotation = Quaternion.Euler (new Vector3 (0f, 0f, playerRotZ));
+		transform.rotation = Quaternion.Euler (0f, 0f, playerRotZ);
 
 		List<Transform> projectileSpawns = projectilePart.GetProjectileSpawns ();
 		foreach (Transform spawn in projectileSpawns) {
@@ -887,10 +891,7 @@ public class PolyController : NetworkBehaviour {
 
 			PartsManager.instance.SpawnProjectile (projectileIndex, spawnPos, spawnRot, playerNumber, netId);
 		}
-
-//		if (!isClient) { // if deticated server
-//			AnimatePartFire(partIndex);
-//		}
+			
 		RpcRelayAnimatePartFire (partIndex);
 	}
 	[ClientRpc]

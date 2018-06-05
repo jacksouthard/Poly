@@ -4,8 +4,10 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class Projectile : NetworkBehaviour {
-	[SyncVar]
-	public NetworkInstanceId playerNetID;
+	[SyncVar(hook="IDSet")]
+	public uint playerNetID = 0;
+
+	public bool idSet = false;
 
 	public bool live = true;
 	public float speed;
@@ -60,5 +62,8 @@ public class Projectile : NetworkBehaviour {
 		}
 	}
 
-
+	void IDSet (uint newValue) {
+//		print ("IDset: " + newValue);
+		idSet = true;
+	}
 }
