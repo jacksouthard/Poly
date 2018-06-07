@@ -16,8 +16,12 @@ public class ShieldPart : Part {
 	Vector3[] originalPositions;
 	float curAnimateTime = 0f;
 	float scrambleDistance = 0.1f;
-//	float scrambleSpeed;
 	bool shouldAnimate = false; // for optimization
+
+	// changing size when deloying and retracting
+	bool changingSize = false;
+	float changeSizeTime = 0.2f;
+	float changeSizeTimer;
 
 	void Start () {
 		maxShieldHealth = shieldHealth;
@@ -27,11 +31,11 @@ public class ShieldPart : Part {
 		shieldColl = GetComponent<PolygonCollider2D> ();
 		originalPositions = new Vector3[shieldLine.positionCount];
 		shieldLine.GetPositions (originalPositions);
-		ShieldBreak ();
+		ShieldBreak (false);
 	}
 
 	void Update () {
-		if (curAnimateTime > 0f) {
+		if (curAnimateTime > 0f && !changingSize) {
 			curAnimateTime -= Time.deltaTime;
 			if (curAnimateTime <= 0f) {
 				ResetShieldVisuals ();
@@ -63,24 +67,29 @@ public class ShieldPart : Part {
 
 //			print (shieldHealth);
 			if (shieldHealth <= 0f) {
-				ShieldBreak();
+				ShieldBreak(true);
 				pc.RelaySheildStateChange (int.Parse (transform.parent.name), false); // break
 			}
 		}
 	}
 
-	void ShieldBreak () {
+	void ShieldBreak (bool animate) {
 		shieldBroken = true;
 		regenTimer = regenTime;
-		shieldGO.SetActive (false);
 		shieldColl.enabled = false;
+		if (animate) {
+			StartCoroutine ("ChangeSize", false);
+		} else {
+			shieldGO.SetActive (false);
+		}
 	}
 
 	void ShieldDeploy () {
 		shieldHealth = maxShieldHealth;
 		shieldBroken = false;
-		shieldGO.SetActive (true);
 		shieldColl.enabled = true;
+		shouldAnimate = MapManager.instance.ShouldRender (transform.position);
+		StartCoroutine ("ChangeSize", true);
 	}
 
 	public void AlterShieldState (bool deploying) {
@@ -89,9 +98,38 @@ public class ShieldPart : Part {
 			if (deploying) {
 				ShieldDeploy ();
 			} else {
-				ShieldBreak ();
+				ShieldBreak (true);
 			}
 		}
+	}
+
+	IEnumerator ChangeSize (bool deploying) {
+		changeSizeTimer = changeSizeTime;
+		shieldGO.SetActive (true);
+		changingSize = true;
+		if (shouldAnimate) {
+			while (changeSizeTimer > 0f) {
+				changeSizeTimer -= Time.deltaTime;
+				float sizeRatio = changeSizeTimer / changeSizeTime;
+				if (deploying) {
+					sizeRatio = 1f - sizeRatio;
+				}
+				SetShieldSize (sizeRatio);
+
+				yield return new WaitForEndOfFrame ();
+			}
+		}
+
+		changingSize = false;
+		shieldGO.SetActive (deploying);
+	}
+
+	void SetShieldSize (float sizeRatio) {
+		Vector3[] newPositions = new Vector3[originalPositions.Length];
+		for (int i = 0; i < originalPositions.Length; i++) {
+			newPositions [i] = Vector3.Lerp (Vector3.zero, originalPositions [i], sizeRatio);
+		}
+		shieldLine.SetPositions (newPositions);
 	}
 
 	void Scramble () {
