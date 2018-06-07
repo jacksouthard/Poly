@@ -36,22 +36,28 @@ public class Damaging : MonoBehaviour {
 		cooldownTimer = hitCooldown;
 	}
 
-	void OnTriggerStay2D (Collider2D coll) {
+	void OnCollisionStay2D (Collision2D coll) {
 		if (!master || !authorative || onCooldown) {
 			return;
 		}
-
 		// only happens if this damaging object is authoritive over its damage assignment
-		if (coll.transform.gameObject.layer == 9 && coll.transform.root.name != "PartsContainer") { // part layer
-			int sideIndex = int.Parse (coll.transform.parent.name);
-			pc.HandleAssignPartDamage (coll.transform.root.gameObject, sideIndex, damage);
+		int colliderLayer = coll.collider.gameObject.layer;
+		GameObject rootGO = coll.gameObject;
+		if (rootGO.name == "Part(Clone)") {
+			return;
+		}
+//		print ("Coll layer: " + colliderLayer + " Root: " + rootGO);
+
+		if (colliderLayer == 9 && rootGO.name != "PartsContainer") { // part layer
+			int sideIndex = int.Parse (coll.collider.transform.parent.name);
+			pc.HandleAssignPartDamage (rootGO, sideIndex, damage);
 			StartCooldown ();
-		} else if (coll.transform.gameObject.layer == 8) { // side layer
-			int sideIndex = int.Parse (coll.name);
-			pc.HandleAssignSideDamage (coll.transform.root.gameObject, sideIndex, damage, false);
+		} else if (colliderLayer == 8) { // side layer
+			int sideIndex = int.Parse (coll.collider.name);
+			pc.HandleAssignSideDamage (rootGO, sideIndex, damage, false);
 			StartCooldown ();
-		} else if (coll.transform.gameObject.layer == 11) { // weakspot layer
-			pc.HandleAssignSideDamage (coll.transform.root.gameObject, 0, 0, true);
+		} else if (colliderLayer == 11) { // weakspot layer
+			pc.HandleAssignSideDamage (rootGO, 0, 0, true);
 			StartCooldown ();
 		}
 	}

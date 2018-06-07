@@ -648,7 +648,6 @@ public class PolyController : NetworkBehaviour {
 		// destory part on poly
 		if (ai) {
 			DestroyPart (sideIndex);
-//			RelayManualBackupExpressPartData ();
 		} else if (isLocalPlayer) {
 			CmdDestroyPart (sideIndex);
 		}
@@ -813,15 +812,6 @@ public class PolyController : NetworkBehaviour {
 				}
 			}
 		}
-	}
-
-	void RelayManualBackupExpressPartData () {
-		RpcManualBackupExpressPartData ();
-	}
-
-	[ClientRpc]
-	void RpcManualBackupExpressPartData () {
-		ExpressPartData (partData);
 	}
 
 	public void RelayDestoryProjectile (GameObject projectile) {
@@ -1005,17 +995,6 @@ public class PolyController : NetworkBehaviour {
 		mf.mesh = m;
 
 		mr.material.color = PartsManager.instance.playerColors[playerNumber];
-
-		// UPDATE POLYGON COLLIDER
-		// the points are all the verticies, minus V0 (center vertex of mesh)
-
-		// build array of points for poly collider
-		// OLD FROM GENERATING FULL POLY COLLIDER
-//		var points = new Vector2[anglesCount];
-//		for (var i = 0; i < anglesCount; i++) {
-//			var vertex = vertices [i + 1];
-//			points [i] = new Vector2 (vertex.x, vertex.y);
-//		}
 
 		var weakPoints = new Vector2[3];
 		weakPoints [0] = Vector2.zero;

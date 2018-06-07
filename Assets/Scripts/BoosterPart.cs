@@ -28,15 +28,21 @@ public class BoosterPart : Part {
 
 	void Activate () {
 		pc.speedBoost += boost;
-		ps.Play ();
 		active = true;
+
+		if (MapManager.instance.ShouldRender (transform.position)) {
+			ps.Play ();
+		}
 	}
 
 	public void Deactivate () {
 		if (active) {
 			pc.speedBoost -= boost;
-			ps.Stop ();
 			active = false;
+
+			if (ps.isPlaying) {
+				ps.Stop ();
+			}
 		}
 	}
 

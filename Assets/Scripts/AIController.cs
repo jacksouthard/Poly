@@ -144,6 +144,9 @@ public class AIController : NetworkBehaviour {
 				UpdateDirToTarget (flip: true);
 				int indexOfRangedWeapon = GetIndexOfPartType (PartData.PartType.ranged, false);
 				UpdateTargetRotation (pc.sidesGOArray [indexOfRangedWeapon].transform);
+//				if (indexOfRangedWeapon > 11) { // DEBUG
+//					print (pc.sidesGOArray.Length + " | " + indexOfRangedWeapon);
+//				}
 			}
 		} else {
 			// melee rush

@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6065516}
   - component: {fileID: 114573687397436992}
   - component: {fileID: 114019054365420176}
-  - component: {fileID: 60552297522822642}
   m_Layer: 9
   m_Name: PartSpike
   m_TagString: Untagged
@@ -57,9 +56,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.0022737528, y: 0.28007686}
-      - {x: -0.11595614, y: 0.07334117}
-      - {x: 0.12305871, y: 0.07323792}
+    - - {x: 0, y: 0.45}
+      - {x: -0.23, y: 0.05}
+      - {x: 0.23, y: 0.05}
     - - {x: -0.02, y: 0.16}
       - {x: -0.014011366, y: 0.15855773}
 --- !u!212 &21280224
@@ -117,35 +116,6 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 120176}
   m_IsPrefabParent: 1
---- !u!60 &60552297522822642
-PolygonCollider2D:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 120176}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: 0, y: 0.55}
-      - {x: -0.3, y: 0.07}
-      - {x: 0.3, y: 0.07}
-    - - {x: -0.02, y: 0.16}
-      - {x: -0.014011366, y: 0.15855773}
 --- !u!114 &114019054365420176
 MonoBehaviour:
   m_ObjectHideFlags: 1

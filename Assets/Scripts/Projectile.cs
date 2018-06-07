@@ -15,6 +15,12 @@ public class Projectile : NetworkBehaviour {
 
 	Color playerColor;
 
+	void Start () {
+		if (isServer) {
+			idSet = true; // server always has the right id set
+		}
+	}
+
 	public void Hit () {
 		live = false;
 

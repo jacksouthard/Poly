@@ -73,6 +73,10 @@ public class MapManager : NetworkBehaviour {
 	}
 
 	public bool ShouldRender (Vector3 position) {
+		if (!isClient) { // servers dont render stuff
+			return false;
+		}
+
 		float dstFromPlayer = (playerTransform.position - position).magnitude;
 		if (dstFromPlayer > renderDistance) {
 			return false;
