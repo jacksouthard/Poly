@@ -30,7 +30,7 @@ public class BoosterPart : Part {
 		pc.speedBoost += boost;
 		active = true;
 
-		if (MapManager.instance.ShouldRender (transform.position)) {
+		if (GameManager.instance.ShouldRender (transform.position)) {
 			ps.Play ();
 		}
 	}

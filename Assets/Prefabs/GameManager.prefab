@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 114546463203169822}
   - component: {fileID: 114122546087096458}
   m_Layer: 0
-  m_Name: MapManager
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -334,16 +334,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1920191657872704}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2624ef07920d842ebb272c7d1fe2d8d8, type: 3}
+  m_Script: {fileID: 11500000, guid: 51fc82612fa1643e9b44f56940d37ab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  versionNumber: 0
-  playerTransform: {fileID: 0}
   mapSize: 100
-  spawnRange: 0
+  spawnRange: 50
   targetPolyCount: 15
   aiPrefab: {fileID: 1946908595206848, guid: 302626992a2ad4d32927e6f9a5286fbe, type: 2}
-  aiCount: 0
+  playerTransform: {fileID: 0}
 --- !u!212 &212047806686102852
 SpriteRenderer:
   m_ObjectHideFlags: 1

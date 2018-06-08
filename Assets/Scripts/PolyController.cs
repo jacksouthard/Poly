@@ -94,7 +94,7 @@ public class PolyController : NetworkBehaviour {
 			master = true;
 		}
 		if (isLocalPlayer && !ai) {
-			transform.position = MapManager.instance.GetSpawnPoint ();
+			transform.position = GameManager.instance.GetSpawnPoint ();
 		}
 
 		// set up references
@@ -187,7 +187,7 @@ public class PolyController : NetworkBehaviour {
 
 			if (ai) { // b/c AI dont respawn
 				ScoreManager.instance.RemovePlayerData (netId.Value);
-				MapManager.instance.AIDie();
+				GameManager.instance.AIDie();
 				Destroy (gameObject, 2f);
 			} else {
 				ScoreManager.instance.ResetKills (netId.Value);
@@ -414,10 +414,10 @@ public class PolyController : NetworkBehaviour {
 			}
 		} else if (!isServer) {
 			// if random other poly in players game
-			if (!rendered && MapManager.instance.ShouldRender (transform.position)) { // just came into render distance
+			if (!rendered && GameManager.instance.ShouldRender (transform.position)) { // just came into render distance
 				UpdateRendering();
 				rendered = true;
-			} else if (rendered && MapManager.instance.ShouldRender (transform.position)) { // just left render distance
+			} else if (rendered && GameManager.instance.ShouldRender (transform.position)) { // just left render distance
 				rendered = false;
 			}
 		}
@@ -491,7 +491,7 @@ public class PolyController : NetworkBehaviour {
 
 	void ResetPlayerLocal () {
 		if (master) {
-			transform.position = MapManager.instance.GetSpawnPoint();
+			transform.position = GameManager.instance.GetSpawnPoint();
 			GetComponent<Rigidbody2D> ().velocity = Vector2.zero;
 			GetComponent<Rigidbody2D> ().angularVelocity = 0f;
 

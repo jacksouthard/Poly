@@ -31,7 +31,7 @@ public class SegmentsManager : NetworkBehaviour {
 	void Start () {
 		spawnTimer = spawnInterval;
 		massCheckTimer = netMassCheckFrequency;
-		spawnRadius = MapManager.instance.spawnRange;
+		spawnRadius = GameManager.instance.spawnRange;
 	}
 	
 	void Update ()

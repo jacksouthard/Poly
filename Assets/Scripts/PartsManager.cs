@@ -38,7 +38,7 @@ public class PartsManager : NetworkBehaviour {
 
 	void Start () {
 		spawnTimer = spawnInterval;
-		spawnRadius = MapManager.instance.spawnRange;
+		spawnRadius = GameManager.instance.spawnRange;
 	}
 	
 	void Update ()

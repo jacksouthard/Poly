@@ -28,7 +28,7 @@ public class PlayerController : NetworkBehaviour {
 	void Start () {
 		deathAnimator = GameObject.Find ("Canvas").transform.Find ("GameOver").GetComponent<Animator> ();
 		if (isLocalPlayer) {
-			MapManager.instance.playerTransform = transform;
+			GameManager.instance.playerTransform = transform;
 			CameraSetup();	
 		}
 

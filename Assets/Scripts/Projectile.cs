@@ -26,7 +26,7 @@ public class Projectile : NetworkBehaviour {
 
 		if (isClient) {
 			// should not render particle effects if to far from player
-			if (!MapManager.instance.ShouldRender (transform.position)) {
+			if (!GameManager.instance.ShouldRender (transform.position)) {
 				return;
 			}
 

@@ -3,24 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class MapManager : NetworkBehaviour {
-	public static MapManager instance;
+public class GameManager : NetworkBehaviour {
+	public static GameManager instance;
 
-	public Transform playerTransform; 
-
+	// map generation
 	Transform bordersContainer;
 	Transform[] borders = new Transform[4];
 	public int mapSize;
+
+	// distance checks
+	[HideInInspector]
 	public float spawnRange;
 	float renderDistance = 20f;
 	float spawnCheckRange = 4f; // distance away from others polys a poly tries to spawn
 
 	[Header("AI")]
 	public int targetPolyCount;
+	int aiCount = 0;
 	public GameObject aiPrefab;
 
-	[Header("Debug")]
-	public int aiCount = 0;
+	[HideInInspector]
+	public Transform playerTransform; 
 
 	void Awake () {
 		instance = this;

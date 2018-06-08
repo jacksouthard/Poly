@@ -11,6 +11,9 @@ public class ScoreManager : NetworkBehaviour {
 
 	void Awake () {
 		instance = this;
+		// naming
+		curAdjIndex = Random.Range (0, adjectives.Length - 1); 
+		curNounIndex = Random.Range (0, nouns.Length - 1); 
 	}
 
 	// ALTERING PLAYER DATA
@@ -77,6 +80,7 @@ public class ScoreManager : NetworkBehaviour {
 	string leaderboardString = "-";
 
 	void Start () {
+		// score
 		scoreboard = GameObject.Find ("Canvas").transform.Find ("Scoreboard");
 		for (int i = 0; i < slots.Length; i++) {
 			slots [i] = scoreboard.GetChild (i + 2);
@@ -234,9 +238,25 @@ public class ScoreManager : NetworkBehaviour {
 
 	public string[] adjectives;
 	public string[] nouns;
+	int curAdjIndex;
+	int curNounIndex;
 	string GenerateName (bool bot) {
-		string randomAdj = adjectives [Random.Range (0, adjectives.Length)];
-		string randomNoun = (bot) ? "Bot" : nouns [Random.Range (0, nouns.Length)];
+		string randomAdj = adjectives [curAdjIndex];
+		curAdjIndex++;
+		if (curAdjIndex >= adjectives.Length) {
+			curAdjIndex = 0;
+		}
+
+		string randomNoun;
+		if (bot) {
+			randomNoun = "Bot";
+		} else {
+			randomNoun = nouns[curNounIndex];
+			curNounIndex++;
+			if (curNounIndex >= nouns.Length) {
+				curNounIndex = 0;
+			}
+		}
 		return randomAdj + " " + randomNoun;
 	}
 }

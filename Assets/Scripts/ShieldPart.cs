@@ -88,7 +88,7 @@ public class ShieldPart : Part {
 		shieldHealth = maxShieldHealth;
 		shieldBroken = false;
 		shieldColl.enabled = true;
-		shouldAnimate = MapManager.instance.ShouldRender (transform.position);
+		shouldAnimate = GameManager.instance.ShouldRender (transform.position);
 		StartCoroutine ("ChangeSize", true);
 	}
 
@@ -146,7 +146,7 @@ public class ShieldPart : Part {
 	}
 
 	protected override void HitByProjectile () {
-		shouldAnimate = MapManager.instance.ShouldRender (transform.position);
+		shouldAnimate = GameManager.instance.ShouldRender (transform.position);
 		curAnimateTime = 0.5f;
 	}
 }
