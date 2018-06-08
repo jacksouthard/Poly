@@ -7,6 +7,7 @@ TagManager:
   - Collectable
   - Attachable
   - Projectile
+  - Border
   layers:
   - Default
   - TransparentFX

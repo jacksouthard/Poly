@@ -69,12 +69,14 @@ public class PartsManager : NetworkBehaviour {
 		// get random part type
 		PartData.PartType partType;
 		int random = Random.Range (0, 100);
-		if (random < 30) {
+		if (random < 25) {
 			partType = PartData.PartType.melee;
 		} else if (random < 60) {
 			partType = PartData.PartType.ranged;
-		} else {
+		} else  if (random < 85) {
 			partType = PartData.PartType.booster;
+		} else {
+			partType = PartData.PartType.shield;
 		}
 
 		// get random part of type
@@ -165,6 +167,7 @@ public class PartData {
 		melee,
 		ranged,
 		booster,
+		shield,
 		none
 	}
 	public PartType type;

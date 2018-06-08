@@ -93,8 +93,10 @@ public class AIController : NetworkBehaviour {
 			target = objectOfInterest.transf;
 			if (objectOfInterest.type == ObjectOfInterest.Type.player) {
 				int playerScore = objectOfInterest.transf.GetComponent<PolyController> ().attackPartsScore;
-				if (pc.attackPartsScore + 1 >= playerScore && (GetIndexOfPartType (PartData.PartType.melee, false) != -1 || GetIndexOfPartType (PartData.PartType.ranged, false) != -1)) {
-					EnterAttack (objectOfInterest.distance);
+				int strengthDifference = playerScore - pc.attackPartsScore; // greater is better change this poly will defeat the enemy
+				if (strengthDifference >= -1 && (GetIndexOfPartType (PartData.PartType.melee, false) != -1 || GetIndexOfPartType (PartData.PartType.ranged, false) != -1)) {
+					bool confidentVictory = (strengthDifference > 1);
+					EnterAttack (objectOfInterest.distance, confidentVictory);
 				} else {
 					EnterFlee ();
 				}
@@ -117,6 +119,24 @@ public class AIController : NetworkBehaviour {
 		dirToTarget = Random.insideUnitCircle.normalized;
 	}
 
+	void OnCollisionEnter2D (Collision2D coll) {
+		if (coll.gameObject.tag == "Border" && state == AIState.wandering) {
+			// wander away from wall
+			timeUntilTargetUpdate = wanderTime + responceDelay;
+
+			// hardcode is best b/c only 4 borders
+			if (coll.gameObject.name == "Border0") {
+				dirToTarget = Vector2.down;
+			} else if (coll.gameObject.name == "Border1") {
+				dirToTarget = Vector2.up;
+			} else if (coll.gameObject.name == "Border2") {
+				dirToTarget = Vector2.left;
+			} else if (coll.gameObject.name == "Border3") {
+				dirToTarget = Vector2.right;
+			}
+		}
+	}
+
 	void EnterCollect (bool part = false) {
 		timeUntilTargetUpdate = maxTimeBeforeUpdate + responceDelay;
 		state = AIState.collecting;
@@ -130,12 +150,12 @@ public class AIController : NetworkBehaviour {
 		}
 	}
 
-	void EnterAttack (float dstToTarget) {
+	void EnterAttack (float dstToTarget, bool confidentVictory) {
 		shouldRotate = true;
 		timeUntilTargetUpdate = combatUpdateTime + responceDelay;
 		state = AIState.attacking;
 		if (ranged) {
-			if (dstToTarget > rangedHoldDst) {
+			if (dstToTarget > rangedHoldDst || confidentVictory) {
 				// rush with ranged
 				UpdateDirToTarget ();
 				GetIndexOfPartType (PartData.PartType.ranged);
@@ -144,9 +164,6 @@ public class AIController : NetworkBehaviour {
 				UpdateDirToTarget (flip: true);
 				int indexOfRangedWeapon = GetIndexOfPartType (PartData.PartType.ranged, false);
 				UpdateTargetRotation (pc.sidesGOArray [indexOfRangedWeapon].transform);
-//				if (indexOfRangedWeapon > 11) { // DEBUG
-//					print (pc.sidesGOArray.Length + " | " + indexOfRangedWeapon);
-//				}
 			}
 		} else {
 			// melee rush
@@ -156,19 +173,28 @@ public class AIController : NetworkBehaviour {
 	}
 
 	void EnterFlee () {
-		shouldRotate = true;
 		timeUntilTargetUpdate = combatUpdateTime + responceDelay;
 		state = AIState.fleeing;
 		UpdateDirToTarget (flip: true);
 
-		int attackSideIndex = GetIndexOfPartType (PartData.PartType.ranged, false);
-		if (attackSideIndex == -1) {
-			attackSideIndex = GetIndexOfPartType (PartData.PartType.melee, false);
+		// check to see if poly has a shield
+		int favoredPartIndex = GetIndexOfPartType (PartData.PartType.shield, false);
+		if (favoredPartIndex == -1) { // no shield
+			// if no shield, check for ranged part
+			favoredPartIndex = GetIndexOfPartType (PartData.PartType.ranged, false);
+			if (favoredPartIndex == -1) { // no ranged part
+				// if no ranged part, check for melee part
+				favoredPartIndex = GetIndexOfPartType (PartData.PartType.melee, false);
+			}
 		}
 
-		if (attackSideIndex != -1) {
-			// fleeing with weapon
-			UpdateTargetRotation (pc.sidesGOArray[attackSideIndex].transform);
+		if (favoredPartIndex != -1) {
+			// fleeing with favored part
+			UpdateTargetRotation (pc.sidesGOArray [favoredPartIndex].transform);
+			shouldRotate = true;
+		} else {
+			// no favored part
+			shouldRotate = false;
 		}
 	}
 

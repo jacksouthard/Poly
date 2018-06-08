@@ -36,20 +36,22 @@ public class ScoreManager : NetworkBehaviour {
 	}
 
 	public void AddKill (uint netID) {
-		PlayerData curData = playerDatas [netID];
-		curData.kills += 1;
-		playerDatas [netID] = curData; 
-		ScoreValueChanged (curData.kills);
-//		print (curData.name + " now has " + curData.kills + " kills");
+		if (playerDatas.ContainsKey(netID)) {
+			PlayerData curData = playerDatas [netID];
+			curData.kills += 1;
+			playerDatas [netID] = curData; 
+			ScoreValueChanged (curData.kills);
+		}
 	}
 
 	public void ResetKills (uint netID) {
-		PlayerData curData = playerDatas [netID];
-		int killsBeforeReset = curData.kills;
-		curData.kills = 0;
-		playerDatas [netID] = curData;
-		ScoreReset (killsBeforeReset);
-//		print ("Reset kills for " + curData.name);
+		if (playerDatas.ContainsKey (netID)) {
+			PlayerData curData = playerDatas [netID];
+			int killsBeforeReset = curData.kills;
+			curData.kills = 0;
+			playerDatas [netID] = curData;
+			ScoreReset (killsBeforeReset);
+		}
 	}
 
 	public string GetName (uint netID) {

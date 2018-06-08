@@ -516,6 +516,22 @@ Prefab:
       propertyPath: m_RootOrder
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 1500517969124324, guid: ec67a1f7dbaf04990a5e8cfee69aaf34, type: 2}
+      propertyPath: m_TagString
+      value: Border
+      objectReference: {fileID: 0}
+    - target: {fileID: 1227101296910560, guid: ec67a1f7dbaf04990a5e8cfee69aaf34, type: 2}
+      propertyPath: m_TagString
+      value: Border
+      objectReference: {fileID: 0}
+    - target: {fileID: 1540769481768934, guid: ec67a1f7dbaf04990a5e8cfee69aaf34, type: 2}
+      propertyPath: m_TagString
+      value: Border
+      objectReference: {fileID: 0}
+    - target: {fileID: 1311938786329758, guid: ec67a1f7dbaf04990a5e8cfee69aaf34, type: 2}
+      propertyPath: m_TagString
+      value: Border
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ec67a1f7dbaf04990a5e8cfee69aaf34, type: 2}
   m_IsPrefabParent: 0
