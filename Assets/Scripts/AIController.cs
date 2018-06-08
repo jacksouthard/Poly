@@ -92,10 +92,11 @@ public class AIController : NetworkBehaviour {
 			// something of interest in range
 			target = objectOfInterest.transf;
 			if (objectOfInterest.type == ObjectOfInterest.Type.player) {
-				int playerScore = objectOfInterest.transf.GetComponent<PolyController> ().attackPartsScore;
-				int strengthDifference = playerScore - pc.attackPartsScore; // greater is better change this poly will defeat the enemy
-				if (strengthDifference >= -1 && (GetIndexOfPartType (PartData.PartType.melee, false) != -1 || GetIndexOfPartType (PartData.PartType.ranged, false) != -1)) {
-					bool confidentVictory = (strengthDifference > 1);
+				int otherPolyStrength = objectOfInterest.transf.GetComponent<PolyController> ().attackPartsScore;
+				int strengthDifference = pc.attackPartsScore - otherPolyStrength; // greater is better change this poly will defeat the enemy
+				bool hasOffensivePart = (GetIndexOfPartType (PartData.PartType.melee, false) != -1 || GetIndexOfPartType (PartData.PartType.ranged, false) != -1);
+				if ((strengthDifference >= -1 || otherPolyStrength == 0) && hasOffensivePart) {
+					bool confidentVictory = (strengthDifference > 1 || otherPolyStrength == 0);
 					EnterAttack (objectOfInterest.distance, confidentVictory);
 				} else {
 					EnterFlee ();
