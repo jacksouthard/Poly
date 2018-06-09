@@ -188,6 +188,7 @@ public class PolyController : NetworkBehaviour {
 			if (ai) { // b/c AI dont respawn
 				ScoreManager.instance.RemovePlayerData (netId.Value);
 				GameManager.instance.AIDie();
+				Destroy (GetComponent<AIController> ());
 				Destroy (gameObject, 2f);
 			} else {
 				ScoreManager.instance.ResetKills (netId.Value);
@@ -373,7 +374,7 @@ public class PolyController : NetworkBehaviour {
 		}
 
 		if (master && attractZone != null && !hasCooldown) {
-			attractZone.radius = radius + 0.75f;
+			attractZone.radius = radius + 1f;
 		}
 
 		if (isLocalPlayer && playerCon != null) {
@@ -568,7 +569,7 @@ public class PolyController : NetworkBehaviour {
 
 	void EndCollectionCooldown () {
 		hasCooldown = false;
-		attractZone.radius = radius + 0.75f;
+		attractZone.radius = radius + 1f;
 	}
 
 	void UpdateSizeSpeedMultiplier () {
