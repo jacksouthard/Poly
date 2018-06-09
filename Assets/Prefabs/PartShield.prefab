@@ -141,8 +141,8 @@ MonoBehaviour:
   master: 0
   detaching: 0
   maxHealth: 100
-  shieldHealth: 120
-  regenTime: 3
+  shieldHealth: 240
+  regenTime: 4
 --- !u!120 &120173234105861936
 LineRenderer:
   m_ObjectHideFlags: 1
