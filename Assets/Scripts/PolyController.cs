@@ -610,12 +610,16 @@ public class PolyController : NetworkBehaviour {
 		DestroyPart (sideIndex);
 	}
 
-	void DestroyPart (int sideIndex) {
+	void DestroyPart (int sideIndex) { // run on server
 		AlterPartInData (-1, sideIndex); // -1 is code for --
 	}
 
-	public void DestroyPartRequest (GameObject side) {
-		DestroyPart (int.Parse (side.name));
+	public void DestroyPartRequest (GameObject side) { // called on master version of poly when its local part is destroyed
+		if (ai) {
+			DestroyPart (int.Parse (side.name));
+		} else {
+			CmdDestroyPart (int.Parse (side.name));
+		}
 	}
 
 	[Command]
@@ -774,7 +778,6 @@ public class PolyController : NetworkBehaviour {
 				sidePartIDs [i] = int.Parse (strPartID);
 			}
 		}
-//		print ("Expressing: " + newPartData);
 		for (int i = 0; i < sidesGOArray.Length; i++) {
 			if (sidePartIDs [i] != -1) {
 				if (sidesGOArray [i].transform.childCount == 0) {
@@ -808,12 +811,21 @@ public class PolyController : NetworkBehaviour {
 						aiCon.UpdatePartTypes (PartData.PartType.none, i);
 					}
 
+					if (GameManager.instance.ShouldRender (transform.position)) {
+						SpawnPartDestoryedEffect (part.transform);
+					}
 					Destroy (part);
 				}
 			}
 		}
 	}
 
+	void SpawnPartDestoryedEffect (Transform part) {
+		GameObject prefab = Resources.Load ("PartExplosion") as GameObject;
+		GameObject effect = Instantiate (prefab, part.transform.position, part.rotation);
+		Destroy (effect, effect.GetComponent<ParticleSystem> ().main.duration);
+	}
+		
 	public void RelayDestoryProjectile (GameObject projectile) {
 		if (isLocalPlayer) {
 			CmdDestoryProjectile (projectile.GetComponent<NetworkIdentity> ().netId);
