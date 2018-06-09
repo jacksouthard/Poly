@@ -100,7 +100,9 @@ public class PartsManager : NetworkBehaviour {
 		GameObject part = Instantiate (partPrefab, spawnPos3D, spawnRot) as GameObject;
 		part.transform.position += part.transform.up * initialDetachDistance;
 		part.GetComponent<Rigidbody2D> ().AddRelativeForce (Vector2.up * detachForce);
-		part.GetComponent<PartController> ().Init(partID);
+		PartController partCon = part.GetComponent<PartController> ();
+		partCon.Init (partID);
+		partCon.StartDespawn ();
 
 		NetworkServer.Spawn (part);
 		partCount++;

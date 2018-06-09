@@ -7,8 +7,9 @@ public class PartController : NetworkBehaviour {
 	public bool collected = false;
 
 	// despawning
-	float maxLifetime = 180f;
-	float minLifetime = 30f;
+	bool shouldDespawn = false;
+	float maxLifetime = 60f;
+	float minLifetime = 20f;
 	float curLifetime;
 
 	[SyncVar(hook="UpdateData")]
@@ -19,14 +20,10 @@ public class PartController : NetworkBehaviour {
 		if (!inited) {
 			UpdateData (id);
 		}
-
-		if (isServer) {
-			curLifetime = Random.Range (minLifetime, maxLifetime);
-		}
 	}
 
 	void Update () {
-		if (isServer) {
+		if (shouldDespawn) {
 			curLifetime -= Time.deltaTime;
 			if (curLifetime <= 0f) {
 				// despawn
@@ -34,6 +31,11 @@ public class PartController : NetworkBehaviour {
 				Destroy (gameObject);
 			}
 		}
+	}
+
+	public void StartDespawn () {
+		curLifetime = Random.Range (minLifetime, maxLifetime);
+		shouldDespawn = true;
 	}
 
 	public void Init (int partID) {
