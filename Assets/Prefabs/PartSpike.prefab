@@ -129,6 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   master: 0
   detaching: 0
+  meleeResistant: 1
   maxHealth: 125
 --- !u!114 &114573687397436992
 MonoBehaviour:

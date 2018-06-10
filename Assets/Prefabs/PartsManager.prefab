@@ -76,7 +76,7 @@ MonoBehaviour:
   - partID: 4
     sprite: {fileID: 21300000, guid: 9c7fa5aa392bd44d3b5a74cd384cd049, type: 3}
     prefab: {fileID: 1876879246813636, guid: 970a7ddbededd4d14a734c6c40ee7f92, type: 2}
-    type: 0
+    type: 1
   - partID: 5
     sprite: {fileID: 21300000, guid: f86fbab0785fd45e887b1b27c534dc1c, type: 3}
     prefab: {fileID: 1689388670953432, guid: a685df4af9c7c4b759ca442b232b1a31, type: 2}

@@ -5,6 +5,7 @@ using UnityEngine;
 public class Part : MonoBehaviour {
 	public bool master = false;
 	public bool detaching = false;
+	public bool meleeResistant;
 
 	public float maxHealth;
 	protected float health;
@@ -19,8 +20,8 @@ public class Part : MonoBehaviour {
 		}
 	}
 
-	void OnCollisionEnter2D (Collision2D coll) {
-		if (master) {
+	void OnCollisionEnter2D (Collision2D coll) { // part hit by melee weapon
+		if (master && !meleeResistant) {
 //			print ("Part Collision: " + coll.collider.gameObject + " GO: " + coll.gameObject);
 			Damaging damaging = coll.collider.gameObject.GetComponentInParent<Damaging> ();
 			if (damaging != null && !damaging.authorative) {

@@ -46,9 +46,13 @@ public class Damaging : MonoBehaviour {
 		if (rootGO.name == "Part(Clone)") {
 			return;
 		}
-//		print ("Coll layer: " + colliderLayer + " Root: " + rootGO);
 
 		if (colliderLayer == 9 && rootGO.name != "PartsContainer") { // part layer
+			// check to make sure part isnt melee resistant
+			if (coll.collider.transform.GetComponent<Part> ().meleeResistant) {
+				return;
+			}
+		
 			int sideIndex = int.Parse (coll.collider.transform.parent.name);
 			pc.HandleAssignPartDamage (rootGO, sideIndex, damage);
 			StartCooldown ();
