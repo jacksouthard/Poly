@@ -1017,15 +1017,20 @@ public class PolyController : NetworkBehaviour {
 
 		mr.material.color = PartsManager.instance.playerColors[playerNumber];
 
-		var weakPoints = new Vector2[3];
-		weakPoints [0] = Vector2.zero;
-		weakPoints [1] = new Vector2(vertices[1].x, vertices[1].y);
-		int lastIndex = vertices.Length - 1; 
-		weakPoints [2] = new Vector2(vertices[lastIndex].x, vertices[lastIndex].y);
+		// dont make a weak spot collider if weak side is less than 25% formed (for weird collision moments)
+		float weakSideSize = Mathf.Repeat (sidesCount, 1f);
+		if (weakSideSize > 0.25f) {
+			var weakPoints = new Vector2[3];
+			weakPoints [0] = Vector2.zero;
+			weakPoints [1] = new Vector2 (vertices [1].x, vertices [1].y);
+			int lastIndex = vertices.Length - 1; 
+			weakPoints [2] = new Vector2 (vertices [lastIndex].x, vertices [lastIndex].y);
+			weakZoneCollider.SetPath (0, weakPoints);
+			weakZoneCollider.enabled = true;
+		} else {
+			weakZoneCollider.enabled = false;
+		}
 
-
-		// set path
-		weakZoneCollider.SetPath (0, weakPoints);
 
 		// POSITION SIDE PREFABS
 
