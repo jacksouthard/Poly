@@ -14,6 +14,9 @@ public class AIController : NetworkBehaviour {
 	// intelegence
 	float maxResponceDelay = 1f;
 	float responceDelay;
+	float individualActionDelayRange = 0.4f; // the max time a given action can be delayed or sped up
+	int cockiness;
+	int cockyRange = 2; // max / min cockiness
 
 	public float visionRange;
 	public float rangedHoldDst;
@@ -50,6 +53,7 @@ public class AIController : NetworkBehaviour {
 		if (pc.isServer) {
 			master = true;
 			responceDelay = Random.Range (0f, maxResponceDelay);
+			cockiness = Random.Range (-cockyRange, cockyRange);
 			for (int i = 0; i < partTypes.Length; i++) {
 				partTypes [i] = PartData.PartType.none;
 			}
@@ -93,7 +97,7 @@ public class AIController : NetworkBehaviour {
 			target = objectOfInterest.transf;
 			if (objectOfInterest.type == ObjectOfInterest.Type.player) {
 				int otherPolyStrength = objectOfInterest.transf.GetComponent<PolyController> ().attackPartsScore;
-				int strengthDifference = pc.attackPartsScore - otherPolyStrength; // greater is better change this poly will defeat the enemy
+				int strengthDifference = pc.attackPartsScore - otherPolyStrength + cockiness; // greater is better change this poly will defeat the enemy
 				bool hasOffensivePart = (GetIndexOfPartType (PartData.PartType.melee, false) != -1 || GetIndexOfPartType (PartData.PartType.ranged, false) != -1);
 				if ((strengthDifference >= -1 || otherPolyStrength == 0) && hasOffensivePart) {
 					bool confidentVictory = (strengthDifference > 1 || otherPolyStrength == 0);
@@ -115,7 +119,7 @@ public class AIController : NetworkBehaviour {
 
 	void EnterWander () {
 		shouldRotate = false;
-		timeUntilTargetUpdate = wanderTime + responceDelay;
+		AddTargetDelayTime (wanderTime);
 		state = AIState.wandering;
 		dirToTarget = Random.insideUnitCircle.normalized;
 	}
@@ -123,7 +127,7 @@ public class AIController : NetworkBehaviour {
 	void OnCollisionEnter2D (Collision2D coll) {
 		if (coll.gameObject.tag == "Border" && state == AIState.wandering) {
 			// wander away from wall
-			timeUntilTargetUpdate = wanderTime + responceDelay;
+			AddTargetDelayTime (wanderTime);
 
 			// hardcode is best b/c only 4 borders
 			if (coll.gameObject.name == "Border0") {
@@ -139,7 +143,7 @@ public class AIController : NetworkBehaviour {
 	}
 
 	void EnterCollect (bool part = false) {
-		timeUntilTargetUpdate = maxTimeBeforeUpdate + responceDelay;
+		AddTargetDelayTime (maxTimeBeforeUpdate);
 		state = AIState.collecting;
 		UpdateDirToTarget ();
 
@@ -153,7 +157,7 @@ public class AIController : NetworkBehaviour {
 
 	void EnterAttack (float dstToTarget, bool confidentVictory) {
 		shouldRotate = true;
-		timeUntilTargetUpdate = combatUpdateTime + responceDelay;
+		AddTargetDelayTime (combatUpdateTime);
 		state = AIState.attacking;
 		if (ranged) {
 			if (dstToTarget > rangedHoldDst || confidentVictory) {
@@ -174,7 +178,7 @@ public class AIController : NetworkBehaviour {
 	}
 
 	void EnterFlee () {
-		timeUntilTargetUpdate = combatUpdateTime + responceDelay;
+		AddTargetDelayTime (combatUpdateTime);
 		state = AIState.fleeing;
 		UpdateDirToTarget (flip: true);
 
@@ -184,8 +188,8 @@ public class AIController : NetworkBehaviour {
 			// if no shield, check for ranged part
 			favoredPartIndex = GetIndexOfPartType (PartData.PartType.ranged, false);
 			if (favoredPartIndex == -1) { // no ranged part
-				// if no ranged part, check for melee part
-				favoredPartIndex = GetIndexOfPartType (PartData.PartType.melee, false);
+				// if no ranged part, check for booster part
+				favoredPartIndex = GetIndexOfPartType (PartData.PartType.booster, false);
 			}
 		}
 
@@ -197,6 +201,10 @@ public class AIController : NetworkBehaviour {
 			// no favored part
 			shouldRotate = false;
 		}
+	}
+
+	void AddTargetDelayTime (float baseActionTime) {
+		timeUntilTargetUpdate = baseActionTime + responceDelay + Random.Range (-individualActionDelayRange, individualActionDelayRange);
 	}
 
 	void UpdateTargetRotation (Transform targetFrontFacingSide) {
