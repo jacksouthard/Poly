@@ -16,6 +16,7 @@ public class ShieldPart : Part {
 	Vector3[] originalPositions;
 	float curAnimateTime = 0f;
 	float scrambleDistance = 0.1f;
+	bool scrambling = false;
 	bool shouldAnimate = false; // for optimization
 
 	// changing size when deloying and retracting
@@ -23,11 +24,20 @@ public class ShieldPart : Part {
 	float changeSizeTime = 0.2f;
 	float changeSizeTimer;
 
+	Color idleColor;
+	Color hitColor;
+
 	void Start () {
 		maxShieldHealth = shieldHealth;
 		shieldGO = transform.Find ("Shield").gameObject;
 		shieldLine = shieldGO.GetComponent<LineRenderer> ();
-		shieldLine.material.color = pc.GetPlayerColor ();
+
+		// coloring
+		Color pcColor = pc.GetPlayerColor ();
+		idleColor = new Color (pcColor.r, pcColor.g, pcColor.b, 0.25f);
+		hitColor = new Color (pcColor.r, pcColor.g, pcColor.b, 0.75f);
+		shieldLine.material.color = idleColor;
+
 		shieldColl = GetComponent<PolygonCollider2D> ();
 		originalPositions = new Vector3[shieldLine.positionCount];
 		shieldLine.GetPositions (originalPositions);
@@ -36,9 +46,16 @@ public class ShieldPart : Part {
 
 	void Update () {
 		if (curAnimateTime > 0f && !changingSize) {
+			if (!scrambling) {
+				// start scramble
+				shieldLine.material.color = hitColor;
+				scrambling = true;
+			}
+
 			curAnimateTime -= Time.deltaTime;
 			if (curAnimateTime <= 0f) {
 				ResetShieldVisuals ();
+				scrambling = false;
 			} else if (shouldAnimate) {
 				Scramble ();
 			}
@@ -143,6 +160,7 @@ public class ShieldPart : Part {
 
 	void ResetShieldVisuals () {
 		shieldLine.SetPositions (originalPositions);
+		shieldLine.material.color = idleColor;
 	}
 
 	protected override void HitByProjectile () {

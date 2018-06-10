@@ -44,6 +44,8 @@ public class PolyController : NetworkBehaviour {
 	// instant death
 	float instantDeathWait = 1f;
 	bool dying = false;
+	float immunityTimeAfterDamaged = 0.5f; // time after taking side damage that poly cannot be instant killed in weak spot
+	float curInstantDeathImmunity = 0f;
 
 	// collection
 	float segmentValue;
@@ -212,11 +214,12 @@ public class PolyController : NetworkBehaviour {
 		}
 	}
 
-	public void TakeDamage (float damage, Transform side, uint? damagingNetID) {
+	public void TakeDamage (float damage, Transform side, uint? damagingNetID) { // called on master poly
 		if (dying) { // dont take damage if already dying
 			return;
 		}
 		float damageInSides = damage * damageToSidesRatio;
+		curInstantDeathImmunity = immunityTimeAfterDamaged;
 		if (ai) {
 			ChangeSidesCount (sidesCount - damageInSides, damagingNetID);
 		} else if (isLocalPlayer) {
@@ -261,7 +264,7 @@ public class PolyController : NetworkBehaviour {
 	}
 
 	public void HitInWeakSpot (uint? damagingNetID) {
-		if (!dying) {
+		if (!dying && curInstantDeathImmunity <= 0f) {
 			StartCoroutine (InstantDeathStart(damagingNetID));
 		}
 	}
@@ -412,6 +415,11 @@ public class PolyController : NetworkBehaviour {
 				if (collectionCooldown <= 0f) {
 					EndCollectionCooldown ();
 				}
+			}
+
+			// immunity timer
+			if (curInstantDeathImmunity > 0f) {
+				curInstantDeathImmunity -= Time.deltaTime;
 			}
 		} else if (!isServer) {
 			// if random other poly in players game
@@ -976,7 +984,7 @@ public class PolyController : NetworkBehaviour {
 			// Vertex
 			var x = Mathf.Cos (angle * Mathf.Deg2Rad) * radius;
 			var y = Mathf.Sin (angle * Mathf.Deg2Rad) * radius;
-			vertices [i + 1] = new Vector3 (x, y, 0);
+			vertices [i + 1] = new Vector3 (x, y, 1);
 
 			// UV: Read about texture mapping here: https://en.wikipedia.org/wiki/UV_mapping
 			var u = Mathf.Cos (angle * Mathf.Deg2Rad); // Does this work?
