@@ -62,7 +62,7 @@ MonoBehaviour:
     prefab: {fileID: 165666, guid: 8a44c579991df4a92856ff32598ee87b, type: 2}
     type: 1
   - partID: 1
-    sprite: {fileID: 21300000, guid: 35ede5fedfec84c4b9a23c5b5beaccab, type: 3}
+    sprite: {fileID: 21300000, guid: fe66cd7e319774f31b7a50687add77e5, type: 3}
     prefab: {fileID: 170578, guid: 7ea297f1d34d64179923d3d784181929, type: 2}
     type: 2
   - partID: 2
@@ -85,6 +85,10 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 72a08a9ad8b4e47828dc88ff4c65f26a, type: 3}
     prefab: {fileID: 1282808061178814, guid: 5c1c1b93d7483458eb915c3b51167b7f, type: 2}
     type: 3
+  - partID: 7
+    sprite: {fileID: 21300000, guid: 42541f11bdb284bf68b0b080e07ca8f5, type: 3}
+    prefab: {fileID: 1959512440993018, guid: b11eb9d01ad97486c9252462a0331543, type: 2}
+    type: 2
   partPrefab: {fileID: 1838061224783800, guid: f31b43c106cc7407ab41d4a622b8065f, type: 2}
   initialDetachDistance: 0.5
   detachForce: 20
