@@ -54,14 +54,14 @@ public class Damaging : MonoBehaviour {
 			}
 		
 			int sideIndex = int.Parse (coll.collider.transform.parent.name);
-			pc.HandleAssignPartDamage (rootGO, sideIndex, damage);
+			pc.HandleAssignPartDamage (rootGO, sideIndex, int.Parse (transform.parent.name), damage);
 			StartCooldown ();
 		} else if (colliderLayer == 8) { // side layer
 			int sideIndex = int.Parse (coll.collider.name);
-			pc.HandleAssignSideDamage (rootGO, sideIndex, damage, false);
+			pc.HandleAssignSideDamage (rootGO, sideIndex, int.Parse (transform.parent.name), damage, false);
 			StartCooldown ();
 		} else if (colliderLayer == 11) { // weakspot layer
-			pc.HandleAssignSideDamage (rootGO, 0, 0, true);
+			pc.HandleAssignSideDamage (rootGO, 0, int.Parse (transform.parent.name), 0, true);
 			StartCooldown ();
 		}
 	}

@@ -673,20 +673,21 @@ public class PolyController : NetworkBehaviour {
 
 	// AUTHORATIVE DAMAGE
 	// part damage
-	public void HandleAssignPartDamage (GameObject otherPoly, int sideIndex, float damage) { // called by part on other client
+	public void HandleAssignPartDamage (GameObject otherPoly, int sideIndex, int authoritivePartIndex, float damage) { // called by part on other client
 		// is local player authorative
-//		print ("Plan to deal damage to " + otherPoly);
 		NetworkInstanceId otherID = otherPoly.GetComponent<NetworkIdentity>().netId;
 		if (isLocalPlayer) {
-			CmdRelayAssignPartDamage (otherID, sideIndex, damage);
+			CmdRelayAssignPartDamage (otherID, sideIndex, authoritivePartIndex, damage);
 		} else if (ai) {
 			RelayAssignPartDamage (otherID, sideIndex, damage);
+			RpcRelayAnimatePartFire (authoritivePartIndex);
 		}
 	}
 
 	[Command]
-	void CmdRelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage) {
+	void CmdRelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, int authoritivePartIndex, float damage) {
 		RelayAssignPartDamage (otherPolyID, sideIndex, damage);
+		RpcRelayAnimatePartFire (authoritivePartIndex);
 	}
 
 	void RelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage) {
@@ -702,34 +703,31 @@ public class PolyController : NetworkBehaviour {
 
 	[ClientRpc]
 	public void RpcRelayPartTakeDamage (int sideIndex, float damage) {
-//		print ("Got client RPC");
 		if (master) {
-//			print ("Finnally Part Take Damage");
 			PartTakeDamage (sideIndex, damage);
 		}
 	}
 
 	public void PartTakeDamage (int sideIndex, float damage) {
-//		if (isLocalPlayer) {
-//			print ("Dealing damage to part");
-//		}
 		sidesGOArray [sideIndex].GetComponentInChildren<Part> ().TakeDamage (damage, true); // melee b/c only spike is authorative
 	}
 
 	// side damage
-	public void HandleAssignSideDamage (GameObject otherPoly, int sideIndex, float damage, bool weakSpotHit) { // called by side on other client
+	public void HandleAssignSideDamage (GameObject otherPoly, int sideIndex, int authorativePartIndex, float damage, bool weakSpotHit) { // called by side on other client
 		// is local player authorative
 		NetworkInstanceId otherID = otherPoly.GetComponent<NetworkIdentity>().netId;
 		if (isLocalPlayer) {
-			CmdRelayAssignSideDamage (otherID, sideIndex, damage, weakSpotHit);
+			CmdRelayAssignSideDamage (otherID, sideIndex, authorativePartIndex , damage, weakSpotHit);
 		} else if (ai) {
 			RelayAssignSideDamage (otherID, sideIndex, damage, netId.Value, weakSpotHit);
+			RpcRelayAnimatePartFire (authorativePartIndex);
 		}
 	}
 
 	[Command]
-	void CmdRelayAssignSideDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage, bool weakSpotHit) {
+	void CmdRelayAssignSideDamage (NetworkInstanceId otherPolyID, int sideIndex, int authorativePartIndex, float damage, bool weakSpotHit) {
 		RelayAssignSideDamage (otherPolyID, sideIndex, damage, netId.Value, weakSpotHit);
+		RpcRelayAnimatePartFire (authorativePartIndex);
 	}
 
 	void RelayAssignSideDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage, uint damagingNetID, bool weakSpotHit) {
@@ -913,10 +911,14 @@ public class PolyController : NetworkBehaviour {
 			
 		RpcRelayAnimatePartFire (partIndex);
 	}
+
 	[ClientRpc]
 	void RpcRelayAnimatePartFire (int partIndex) {
-		AnimatePartFire (partIndex);
+		if (GameManager.instance.ShouldRender (transform.position)) {
+			AnimatePartFire (partIndex);
+		}
 	}
+
 	void AnimatePartFire (int partIndex) {
 		Animator anim = sidesGOArray [partIndex].GetComponentInChildren<Animator> ();
 		if (anim != null) {

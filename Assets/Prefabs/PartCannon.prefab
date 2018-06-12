@@ -185,6 +185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   master: 0
   detaching: 0
+  meleeResistant: 0
   maxHealth: 100
   projectileIndex: 1
   fireRate: 1.5
