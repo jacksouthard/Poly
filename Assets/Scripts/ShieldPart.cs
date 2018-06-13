@@ -111,7 +111,6 @@ public class ShieldPart : Part {
 
 	public void AlterShieldState (bool deploying) {
 		if (!master) {
-			print ("Alter State");
 			if (deploying) {
 				ShieldDeploy ();
 			} else {

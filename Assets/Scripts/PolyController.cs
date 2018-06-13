@@ -592,7 +592,7 @@ public class PolyController : NetworkBehaviour {
 		
 	// PARTS --------------------------------------------------------------------------------------------------------------------------------
 
-	[SyncVar(hook="ExpressPartData")]
+	[SyncVar]
 	string partData = "------------------------"; // each set of 00's represents the part data of one side
 
 	public void AttachPartRequest (GameObject part, GameObject side) {
@@ -692,7 +692,6 @@ public class PolyController : NetworkBehaviour {
 
 	void RelayAssignPartDamage (NetworkInstanceId otherPolyID, int sideIndex, float damage) {
 		// runs on server
-//		print ("Relay on server");
 		PolyController otherPolyController = NetworkServer.FindLocalObject (otherPolyID).GetComponent<PolyController>();
 		if (otherPolyController.ai) {
 			otherPolyController.PartTakeDamage (sideIndex, damage);
@@ -773,11 +772,18 @@ public class PolyController : NetworkBehaviour {
 		string before = partData.Substring(0, partSetIndex);
 		string after = partData.Substring (partSetIndex + 2);
 		string newData = before + IDString + after;
+
 		partData = newData;
+		RpcExpressPartData (partData);
 
 		if (!isClient) {
 			ExpressPartData (partData); // not for host, only server
 		}
+	}
+
+	[ClientRpc]
+	void RpcExpressPartData (string newPartData) {
+		ExpressPartData (newPartData);
 	}
 
 	void ExpressPartData (string newPartData) {
@@ -1127,7 +1133,6 @@ public class PolyController : NetworkBehaviour {
 		if (!isEqualSides) {
 			otherVerticesCount -= 1;
 		}
-		//		print (otherVerticesCount);
 
 		float otherAngle = otherAnglesTotal / otherVerticesCount;
 
