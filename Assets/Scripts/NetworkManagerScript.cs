@@ -41,7 +41,7 @@ public class NetworkManagerScript : NetworkManager {
 //			MakeMenuIncompadible ();
 //		}
 
-//		useWebSockets = true;
+		useWebSockets = true;
 	}
 
 	void Start () {
